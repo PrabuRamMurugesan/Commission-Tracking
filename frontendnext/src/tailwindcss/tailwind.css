@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+body {
+  @apply bg-gray-100 text-gray-800;
+}
+
+/* Dashboard layout */
+.dashboard-container {
+  @apply flex h-screen;
+}
+
+/* Sidebar styling */
+.sidebar {
+  @apply bg-gray-900 text-white w-64 min-h-screen p-4;
+}
+.sidebar a {
+  @apply block py-2 px-4 rounded-lg hover:bg-gray-800;
+}
+
+/* Header styling */
+.header {
+  @apply bg-white shadow-md py-4 px-6 flex justify-between items-center;
+}
+
+/* Footer styling */
+.footer {
+  @apply bg-white shadow-md py-4 px-6 text-center text-gray-600;
+}
+
+/* Card styling */
+.card {
+  @apply bg-white p-4 rounded-lg shadow-md;
+}
+
+/* Button styling */
+.button {
+  @apply px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition;
+}
+
+/* Tables */
+.table {
+  @apply w-full bg-white shadow-md rounded-lg overflow-hidden;
+}
+.table th {
+  @apply bg-gray-200 text-gray-700 py-2 px-4;
+}
+.table td {
+  @apply border-b border-gray-300 py-2 px-4;
+}
+
+/* Chart container */
+.chart-container {
+  @apply bg-white p-4 rounded-lg shadow-md;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-slide-down {
+  animation: slideDown 0.5s ease-in-out;
+}

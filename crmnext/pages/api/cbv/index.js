@@ -1,9 +1,6 @@
 // crmnext/pages/api/cbv/index.js
 import Cors from "cors";
-import {
-  getAllCbv,
-  createCbv,
-} from "../../../controllers/Cbv/cbvController";
+import { getAllCbv, createCbv } from "../../../controllers/Cbv/cbvController";
 import dbConnect from "../../../lib/mongodb";
 
 function runMiddleware(req, res, fn) {
@@ -14,10 +11,10 @@ function runMiddleware(req, res, fn) {
 
 // Initialize the cors middleware
 const cors = Cors({
-  origin:        "http://localhost:5173",
-  methods:       ["POST","OPTIONS"],
-  credentials:   true,
-  allowedHeaders:["Content-Type","Authorization"],
+  origin: "http://localhost:5174",
+  methods: ["POST", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
 });
 
 export default async function handler(req, res) {

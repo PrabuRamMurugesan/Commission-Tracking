@@ -1,499 +1,784 @@
-import React, { useState } from "react";
-import axios from "axios";
+// File: InvoiceCreatePage.jsx
+
+import React, { useState ,useEffect} from "react";
+import { Form, Button, Row, Col, Table } from "react-bootstrap";
 
 const InvoiceCreatePage = () => {
-  const [showSuccess, setShowSuccess] = useState(false);
-
+  // State for all non-item fields
   const [formData, setFormData] = useState({
-    invoiceNumber: "EB1F8CE8",
-    invoiceDate: new Date().toISOString().split("T")[0],
-    dueDate: new Date().toISOString().split("T")[0],
-
+    invoiceDate: "",
+    dueDate: "",
     platform: "BBSCART",
-    status: "Partial",
-    buyer: {
-      name: "test",
-      gstin: "65656655",
-      state: "test",
-    },
-    seller: {
-      name: "test",
-      gstin: "test",
-      state: "test",
-    },
-    items: [],
-    currentItem: {
-      name: "",
-      amount: "",
+    invoiceType: "Manual",
+    poNumber: "",
+    deliveryDate: "",
+    invoiceTags: "",
+    buyerName: "",
+    buyerGSTIN: "",
+    buyerState: "",
+    sellerName: "",
+    sellerGSTIN: "",
+    sellerState: "",
+    gstType: "Intra-State",
+    globalCGST: 0,
+    globalSGST: 0,
+    globalIGST: 0,
+    billingAddress: "",
+    shippingAddress: "",
+    sameAsBilling: false,
+    amountPaid: 0,
+    walletPaid: 0,
+    escrowHeld: 0,
+    paymentMode: "Cash",
+    paymentReferenceId: "",
+    paymentDate: "",
+    useEscrow: false,
+    partialPayment: false,
+    shippingCharges: 0,
+    roundOff: 0,
+    otherCharges: 0,
+    notes: "",
+    terms: "",
+    // attachmentUrl: "", // handle file upload separately if needed
+    subtotal: 0,
+    totalDiscount: 0,
+    totalGST: 0,
+    grandTotal: 0,
+    walletAdjustment: 0,
+    finalPayable: 0,
+  });
+
+  
+  // State for dynamic items table
+  const [items, setItems] = useState([
+    {
+      itemName: "",
       hsn: "",
-      gstType: "",
+      quantity: 1,
+      rate: 0,
+      discount: 0,
       cgst: 0,
       sgst: 0,
       igst: 0,
     },
-    payment: {
-      amountPaid: "455",
-      mode: "Cash",
-      isEscrow: true,
-      isPartialPayment: true,
-    },
-    notes: "test",
-  });
+  ]);
 
+  // Handle change on any simple form field
   const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name in formData.payment) {
-      setFormData((prev) => ({
-        ...prev,
-        payment: {
-          ...prev.payment,
-          [name]: value,
-        },
-      }));
-    } else if (name in formData.currentItem) {
-      setFormData((prev) => ({
-        ...prev,
-        currentItem: {
-          ...prev.currentItem,
-          [name]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleAddItem = () => {
-    if (
-      !formData.currentItem.name ||
-      !formData.currentItem.amount ||
-      !formData.currentItem.gstType
-    ) {
-      alert("Item must include name, amount, and GST type.");
-      return;
-    }
-    
-
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, { ...prev.currentItem }],
-      currentItem: {
-        name: "",
-        amount: "",
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  // Handle change in items table
+  const handleItemChange = (idx, field, value) => {
+    const updated = [...items];
+    updated[idx][field] = value;
+    setItems(updated);
+  };
+
+  const addItemRow = () => {
+    setItems((prev) => [
+      ...prev,
+      {
+        itemName: "",
         hsn: "",
-        gstType: "",
+        quantity: 1,
+        rate: 0,
+        discount: 0,
         cgst: 0,
         sgst: 0,
         igst: 0,
       },
-    }));
+    ]);
   };
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // <-- Prevent page reload
 
-    // Step 1: Calculate totals
-    const totalAmount = formData.items.reduce(
-      (sum, item) => sum + Number(item.amount || 0),
-      0
-    );
-    const totalGST = formData.items.reduce(
-      (sum, item) =>
-        sum +
-        (Number(item.amount || 0) *
-          (Number(item.cgst || 0) +
-            Number(item.sgst || 0) +
-            Number(item.igst || 0))) /
-          100,
-      0
-    );
-    const grandTotal = totalAmount + totalGST;
+  const removeItemRow = (idx) => {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  };
+  useEffect(() => {
+    let subtotal = 0;
+    let totalDiscount = 0;
+    let totalGST = 0;
 
-    // Step 2: Validate core required fields
-    if (
-      !formData.platform ||
-      !formData.invoiceNumber ||
-      !formData.invoiceDate
-    ) {
-      alert("Missing required invoice fields.");
-      return;
-    }
-    // if (res.data.success) {
-    //   alert("✅ Invoice created successfully!");
-    //   setShowSuccess(true);
-    //   setTimeout(() => setShowSuccess(false), 3000);
-    // }
-    if (formData.items.length === 0) {
-      alert("At least one item is required.");
-      return;
-    }
+    items.forEach((item) => {
+      // force numeric values
+      const rate = parseFloat(item.rate) || 0;
+      const qty = parseFloat(item.quantity) || 0;
+      const discPerc = parseFloat(item.discount) || 0;
+      const cgstPerc = parseFloat(item.cgst) || 0;
+      const sgstPerc = parseFloat(item.sgst) || 0;
+      const igstPerc = parseFloat(item.igst) || 0;
 
-    // Step 3: Prepare payload
-    const payload = {
-      ...formData,
-      totalAmount,
+      const gross = rate * qty;
+      const discountAmt = gross * (discPerc / 100);
+      const taxable = gross - discountAmt;
+
+      subtotal += taxable;
+      totalDiscount += discountAmt;
+
+      // now numeric addition
+      const gstAmt = taxable * ((cgstPerc + sgstPerc + igstPerc) / 100);
+      totalGST += gstAmt;
+    });
+
+    // extra charges
+    const shipping = parseFloat(formData.shippingCharges) || 0;
+    const roundOff = parseFloat(formData.roundOff) || 0;
+    const other = parseFloat(formData.otherCharges) || 0;
+    const wallet = parseFloat(formData.walletPaid) || 0;
+
+    // grand total and final payable
+    const grandTotal = subtotal + totalGST + shipping + other + roundOff;
+    const walletAdjust = wallet;
+    const finalPayable = grandTotal;
+
+    setFormData((fd) => ({
+      ...fd,
+      subtotal,
+      totalDiscount,
       totalGST,
       grandTotal,
-      createdBy: {
-        userId: "663e65002a5873c8a987e333", // replace with real session data
-        role: "admin",
-      },
-    };
+      walletAdjustment: walletAdjust,
+      finalPayable,
+    }));
+  }, [
+    items,
+    formData.shippingCharges,
+    formData.otherCharges,
+    formData.roundOff,
+    formData.walletPaid,
+  ]);
+  
+  // Submit handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    delete payload.currentItem; // not needed in DB
+    // Basic front-end validation
+    const missing = [];
+    if (!formData.buyerName) missing.push("Buyer Name");
+    if (!formData.sellerName) missing.push("Seller Name");
+    if (items.length === 0) missing.push("At least one item");
+    if (!formData.invoiceDate) missing.push("Invoice Date");
+    if (!formData.platform) missing.push("Platform");
+    if (missing.length) {
+      console.error("Validation error, missing:", missing);
+      alert("Please fill: " + missing.join(", "));
+      return;
+    }
 
-    // console.log("Sending to backend:", payload);
+    const payload = { ...formData, items, createdBy: "Admin" };
+    console.log("Submitting invoice payload:", payload);
 
     try {
-      console.log("Sending invoice to backend:", payload);
-      const res = await axios.post("/api/invoices", payload);
-      console.log("Server Response:", res.data);
-      
-      if (res.data.success) {
+      const res = await fetch("/api/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Server error:", data);
+        alert("Error: " + (data.message || "Unable to create invoice"));
+      } else {
+        console.log("Invoice created successfully:", data);
         alert("Invoice created successfully!");
+        // Optionally reset form or redirect here
       }
-    } catch (error) {
-      console.error(
-        "Error creating invoice:",
-        error.response?.data || error.message
-      );
-      alert(
-        `Server Error: ${error.response?.data?.message || "Unknown error"}`
-      );
+    } catch (err) {
+      console.error("Network / unexpected error:", err);
+      alert("Unexpected error: " + err.message);
     }
   };
-  
 
   return (
-    <div className="container mt-4">
-      <h2>Create Invoice</h2>
-      {showSuccess && (
-        <div className="alert alert-success" role="alert">
-          ✅ Invoice created successfully!
-        </div>
-      )}
-      <form>
-        <div className="row mb-3">
-          <div className="col">
-            <label>Invoice Number</label>
-            <input
-              className="form-control"
-              name="invoiceNumber"
-              value={formData.invoiceNumber}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col">
-            <label>Invoice Date</label>
-            <input
-              type="date"
-              className="form-control"
-              name="invoiceDate"
-              value={formData.invoiceDate}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col">
-            <label>Due Date</label>
-            <input
-              type="date"
-              className="form-control"
-              name="dueDate"
-              value={formData.dueDate}
-              onChange={handleChange}
-            />
-          </div>
+    <div className="container py-4">
+      <h3 className="mb-4">Create Invoice</h3>
+      <Form onSubmit={handleSubmit}>
+        {/* Invoice Header */}
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Invoice Number</Form.Label>
+              <Form.Control type="text" value="AUTO-GENERATED" readOnly />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Invoice Date</Form.Label>
+              <Form.Control
+                name="invoiceDate"
+                type="date"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Due Date</Form.Label>
+              <Form.Control
+                name="dueDate"
+                type="date"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
 
-          <div className="col">
-            <label>Platform</label>
-            <select
-              className="form-select"
-              name="platform"
-              value={formData.platform}
-              onChange={handleChange}
-            >
-              <option>BBSCART</option>
-              <option>Thiaworld</option>
-              <option>Golldex</option>
-            </select>
-          </div>
-        </div>
-        {/* Buyer and Seller Info */}
-        <h5>Buyer Info</h5>
-        <input
-          className="form-control mb-2"
-          placeholder="Buyer Name"
-          value={formData.buyer.name}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              buyer: { ...formData.buyer, name: e.target.value },
-            })
-          }
-        />
-        <input
-          className="form-control mb-2"
-          placeholder="Buyer GSTIN"
-          value={formData.buyer.gstin}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              buyer: { ...formData.buyer, gstin: e.target.value },
-            })
-          }
-        />
-        <input
-          className="form-control mb-2"
-          placeholder="Buyer State"
-          value={formData.buyer.state}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              buyer: { ...formData.buyer, state: e.target.value },
-            })
-          }
-        />
-        <h5>Seller Info</h5>
-        <input
-          className="form-control mb-2"
-          placeholder="Seller Name"
-          value={formData.seller.name}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              seller: { ...formData.seller, name: e.target.value },
-            })
-          }
-        />
-        <input
-          className="form-control mb-2"
-          placeholder="Seller GSTIN"
-          value={formData.seller.gstin}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              seller: { ...formData.seller, gstin: e.target.value },
-            })
-          }
-        />
-        <input
-          className="form-control mb-2"
-          placeholder="Seller State"
-          value={formData.seller.state}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              seller: { ...formData.seller, state: e.target.value },
-            })
-          }
-        />
-        {/* Item Add */}
-        <h5>Invoice Items</h5>
-        <div className="row mb-2">
-          <div className="col">
-            <input
-              name="name"
-              placeholder="Item Name"
-              className="form-control"
-              value={formData.currentItem.name}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col">
-            <input
-              name="amount"
-              placeholder="Amount"
-              className="form-control"
-              value={formData.currentItem.amount}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col">
-            <input
-              name="hsn"
-              placeholder="HSN"
-              className="form-control"
-              value={formData.currentItem.hsn}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-        <div className="row mb-2">
-          <div className="col">
-            <select
-              name="gstType"
-              className="form-select"
-              value={formData.currentItem.gstType}
-              onChange={handleChange}
-            >
-              <option value="">GST Type</option>
-              <option value="GST">GST</option>
-              <option value="Non-GST">Non-GST</option>
-            </select>
-          </div>
-          <div className="col">
-            <input
-              name="cgst"
-              placeholder="CGST %"
-              className="form-control"
-              value={formData.currentItem.cgst}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col">
-            <input
-              name="sgst"
-              placeholder="SGST %"
-              className="form-control"
-              value={formData.currentItem.sgst}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col">
-            <input
-              name="igst"
-              placeholder="IGST %"
-              className="form-control"
-              value={formData.currentItem.igst}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col">
-            <button
-              type="button"
-              className="btn btn-success"
-              onClick={handleAddItem}
-            >
-              Add Item
-            </button>
-          </div>
-        </div>
-        {/* Items List */}
-        <ul className="list-group mb-3">
-          {formData.items.map((item, idx) => (
-            <li className="list-group-item" key={idx}>
-              {item.name} — ₹{item.amount} | GST: {item.gstType} (CGST:{" "}
-              {item.cgst}%, SGST: {item.sgst}%, IGST: {item.igst}%)
-            </li>
-          ))}
-        </ul>
-        {/* Payment */}
-        <h5>Payment Info</h5>
-        <input
-          className="form-control mb-2"
-          name="amountPaid"
-          placeholder="Amount Paid"
-          value={formData.payment.amountPaid}
-          onChange={handleChange}
-        />
-        <select
-          className="form-select mb-2"
-          name="mode"
-          value={formData.payment.mode}
-          onChange={handleChange}
-        >
-          <option>Cash</option>
-          <option>Card</option>
-          <option>Wallet</option>
-        </select>
-        <div className="form-check mb-2">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            checked={formData.payment.isEscrow}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                payment: { ...formData.payment, isEscrow: e.target.checked },
-              })
-            }
-          />
-          <label className="form-check-label">Use Escrow</label>
-        </div>
-        <div className="form-check mb-2">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            checked={formData.payment.isPartialPayment}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                payment: {
-                  ...formData.payment,
-                  isPartialPayment: e.target.checked,
-                },
-              })
-            }
-          />
-          <label className="form-check-label">Partial Payment</label>
-        </div>
-        {/* Notes */}
-        <textarea
-          className="form-control mb-3"
-          name="notes"
-          placeholder="Additional notes"
-          value={formData.notes}
-          onChange={handleChange}
-        />
-        {/* === Invoice Summary Section === */}
-        <div className="mt-4">
-          <h5>Invoice Summary</h5>
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Platform</Form.Label>
+              <Form.Select
+                name="platform"
+                onChange={handleChange}
+                value={formData.platform}
+              >
+                <option>BBSCART</option>
+                <option>Golddex</option>
+                <option>EmerJobs</option>
+                <option>Thiaworld</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Invoice Type</Form.Label>
+              <Form.Select
+                name="invoiceType"
+                onChange={handleChange}
+                value={formData.invoiceType}
+              >
+                <option>Manual</option>
+                <option>Auto</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>PO Number</Form.Label>
+              <Form.Control
+                name="poNumber"
+                type="text"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
 
-          <ul className="list-group mb-3">
-            <li className="list-group-item d-flex justify-content-between">
-              <span>Subtotal</span>
-              <span>
-                ₹
-                {formData.items.reduce(
-                  (sum, item) => sum + Number(item.amount || 0),
-                  0
-                )}
-              </span>
-            </li>
-            <li className="list-group-item d-flex justify-content-between">
-              <span>Total GST</span>
-              <span>
-                ₹
-                {formData.items
-                  .reduce(
-                    (sum, item) =>
-                      sum +
-                      (Number(item.amount || 0) *
-                        (Number(item.cgst || 0) +
-                          Number(item.sgst || 0) +
-                          Number(item.igst || 0))) /
-                        100,
-                    0
-                  )
-                  .toFixed(2)}
-              </span>
-            </li>
-            <li className="list-group-item d-flex justify-content-between fw-bold">
-              <span>Grand Total</span>
-              <span>
-                ₹
-                {formData.items
-                  .reduce((sum, item) => {
-                    const amt = Number(item.amount || 0);
-                    const gst =
-                      (amt *
-                        (Number(item.cgst || 0) +
-                          Number(item.sgst || 0) +
-                          Number(item.igst || 0))) /
-                      100;
-                    return sum + amt + gst;
-                  }, 0)
-                  .toFixed(2)}
-              </span>
-            </li>
-          </ul>
-        </div>
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Delivery Date</Form.Label>
+              <Form.Control
+                name="deliveryDate"
+                type="date"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={8}>
+            <Form.Group>
+              <Form.Label>Invoice Tags</Form.Label>
+              <Form.Control
+                name="invoiceTags"
+                type="text"
+                placeholder="Add tags separated by comma"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
 
-        {/* Submit */}
-      </form>
-      <button type="button" className="btn btn-primary" onClick={handleSubmit}>
-        Submit Invoice
-      </button>
+        {/* Buyer & Seller Info */}
+        <h5 className="mt-4">Buyer Information</h5>
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Buyer Name</Form.Label>
+              <Form.Control
+                name="buyerName"
+                type="text"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Buyer GSTIN</Form.Label>
+              <Form.Control
+                name="buyerGSTIN"
+                type="text"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Buyer State</Form.Label>
+              <Form.Control
+                name="buyerState"
+                type="text"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        <h5 className="mt-4">Seller Information</h5>
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Seller Name</Form.Label>
+              <Form.Control
+                name="sellerName"
+                type="text"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Seller GSTIN</Form.Label>
+              <Form.Control
+                name="sellerGSTIN"
+                type="text"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Seller State</Form.Label>
+              <Form.Control
+                name="sellerState"
+                type="text"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* GST Configuration */}
+        <h5 className="mt-4">GST Configuration</h5>
+        <Row className="mb-3">
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>GST Type</Form.Label>
+              <Form.Select
+                name="gstType"
+                onChange={handleChange}
+                value={formData.gstType}
+              >
+                <option>Intra-State</option>
+                <option>Inter-State</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Global CGST %</Form.Label>
+              <Form.Control
+                name="globalCGST"
+                type="number"
+                onChange={handleChange}
+                value={formData.globalCGST}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Global SGST %</Form.Label>
+              <Form.Control
+                name="globalSGST"
+                type="number"
+                onChange={handleChange}
+                value={formData.globalSGST}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Global IGST %</Form.Label>
+              <Form.Control
+                name="globalIGST"
+                type="number"
+                onChange={handleChange}
+                value={formData.globalIGST}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Invoice Items */}
+        <h5 className="mt-4">Invoice Items</h5>
+        <Table bordered responsive className="mb-3">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>HSN</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Discount %</th>
+              <th>CGST %</th>
+              <th>SGST %</th>
+              <th>IGST %</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((itm, i) => (
+              <tr key={i}>
+                <td>
+                  <Form.Control
+                    type="text"
+                    value={itm.itemName}
+                    onChange={(e) =>
+                      handleItemChange(i, "itemName", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    type="text"
+                    value={itm.hsn}
+                    onChange={(e) => handleItemChange(i, "hsn", e.target.value)}
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    type="number"
+                    value={itm.quantity}
+                    onChange={(e) =>
+                      handleItemChange(i, "quantity", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    type="number"
+                    value={itm.rate}
+                    onChange={(e) =>
+                      handleItemChange(i, "rate", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    type="number"
+                    value={itm.discount}
+                    onChange={(e) =>
+                      handleItemChange(i, "discount", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    type="number"
+                    value={itm.cgst}
+                    onChange={(e) =>
+                      handleItemChange(i, "cgst", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    type="number"
+                    value={itm.sgst}
+                    onChange={(e) =>
+                      handleItemChange(i, "sgst", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    type="number"
+                    value={itm.igst}
+                    onChange={(e) =>
+                      handleItemChange(i, "igst", e.target.value)
+                    }
+                  />
+                </td>
+                <td>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => removeItemRow(i)}
+                  >
+                    Remove
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+        <Button variant="secondary" onClick={addItemRow}>
+          + Add Item
+        </Button>
+
+        {/* Billing & Shipping */}
+        <h5 className="mt-4">Billing & Shipping</h5>
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Billing Address</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                name="billingAddress"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Shipping Address</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                name="shippingAddress"
+                onChange={handleChange}
+              />
+            </Form.Group>
+            <Form.Check
+              label="Same as Billing Address"
+              name="sameAsBilling"
+              onChange={handleChange}
+              checked={formData.sameAsBilling}
+              className="mt-2"
+            />
+          </Col>
+        </Row>
+
+        {/* Payment Information */}
+        <h5 className="mt-4">Payment Information</h5>
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Amount Paid</Form.Label>
+              <Form.Control
+                name="amountPaid"
+                type="number"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Wallet Paid</Form.Label>
+              <Form.Control
+                name="walletPaid"
+                type="number"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Escrow Held</Form.Label>
+              <Form.Control
+                name="escrowHeld"
+                type="number"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Payment Mode</Form.Label>
+              <Form.Select
+                name="paymentMode"
+                onChange={handleChange}
+                value={formData.paymentMode}
+              >
+                <option>Cash</option>
+                <option>Bank</option>
+                <option>Wallet</option>
+                <option>UPI</option>
+                <option>NEFT/RTGS</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Payment Reference ID</Form.Label>
+              <Form.Control
+                name="paymentReferenceId"
+                type="text"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Payment Date</Form.Label>
+              <Form.Control
+                name="paymentDate"
+                type="date"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Check
+              label="Use Escrow"
+              name="useEscrow"
+              onChange={handleChange}
+              checked={formData.useEscrow}
+            />
+          </Col>
+          <Col md={6}>
+            <Form.Check
+              label="Partial Payment"
+              name="partialPayment"
+              onChange={handleChange}
+              checked={formData.partialPayment}
+            />
+          </Col>
+        </Row>
+
+        {/* Additional Charges */}
+        <h5 className="mt-4">Additional Charges & Adjustments</h5>
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Shipping Charges</Form.Label>
+              <Form.Control
+                name="shippingCharges"
+                type="number"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Round-Off (+/-)</Form.Label>
+              <Form.Control
+                name="roundOff"
+                type="number"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Other Charges</Form.Label>
+              <Form.Control
+                name="otherCharges"
+                type="number"
+                onChange={handleChange}
+                placeholder="Enter any extra charge"
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Notes & Terms */}
+        <h5 className="mt-4">Notes & Terms</h5>
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Notes</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                name="notes"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Terms & Conditions</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={2}
+                name="terms"
+                onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Invoice Summary */}
+        <h5 className="mt-4">Invoice Summary</h5>
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Subtotal</Form.Label>
+              <Form.Control
+                type="text"
+                value={`₹${formData.subtotal}`}
+                readOnly
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Total GST</Form.Label>
+              <Form.Control
+                type="text"
+                value={`₹${formData.totalGST}`}
+                readOnly
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Grand Total</Form.Label>
+              <Form.Control
+                type="text"
+                value={`₹${formData.grandTotal}`}
+                readOnly
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="mb-4">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Wallet Adjustment</Form.Label>
+              <Form.Control
+                type="text"
+                value={`₹${formData.walletAdjustment}`}
+                readOnly
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Final Payable Amount</Form.Label>
+              <Form.Control
+                type="text"
+                value={`₹${formData.finalPayable}`}
+                readOnly
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Action Buttons */}
+        <div className="d-flex justify-content-end gap-3">
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => window.location.reload()}
+          >
+            Reset
+          </Button>
+          <Button variant="primary" type="submit">
+            Create Invoice
+          </Button>
+        </div>
+      </Form>
     </div>
   );
 };

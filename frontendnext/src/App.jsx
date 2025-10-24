@@ -91,7 +91,7 @@ import Transactions from "./pages/Transactions";
 import UserList from "./pages/users/UserList";
 import UserProfilePage from "./pages/users/UserProfilePage";
 import VendorList from "./pages/VendorList";
-import VendorCustomerList from "./pages/VendorCustomerList"
+import VendorCustomerList from "./pages/VendorCustomerList";
 import CbvList from "./pages/CbvList";
 import CbvCustomerList from "./pages/CbvCustomerList";
 import AgentCustomerList from "./pages/AgentCustomerList";
@@ -121,8 +121,6 @@ import InvoiceDetailPage from "./pages/Invoice/InvoiceDetailPage";
 import InvoiceEditPage from "./pages/Invoice/InvoiceEditPage";
 import InvoicePreviewPage from "./pages/Invoice/InvoicePreviewPage";
 import InvoiceDownload from "./pages/Invoice/InvoiceDownload";
-import InvoiceStatusTracker from "./pages/Invoice/InvoiceStatusTracker";
-import InvoiceEscrowInfo from "./pages/Invoice/InvoiceEscrowInfo";
 import InvoiceWalletHistory from "./pages/Invoice/InvoiceWalletHistory";
 import InvoiceTaxBreakdown from "./pages/Invoice/InvoiceTaxBreakdown";
 import InvoiceFilterPanel from "./pages/Invoice/InvoiceFilterPanel";
@@ -133,9 +131,21 @@ import InvoicePagination from "./pages/Invoice/InvoicePagination";
 import InvoiceCustomerSidePreview from "./pages/Invoice/InvoiceCustomerSidePreview";
 import InvoiceDownloadOptions from "./pages/Invoice/InvoiceDownloadOptions";
 import InvoiceRecurringSetup from "./pages/Invoice/InvoiceRecurringSetup";
-import InvoiceSmartMerge from "./pages/Invoice/InvoiceSmartMerge";
-import InvoiceAuditLog from "./pages/Invoice/InvoiceAuditLog";
-import InvoiceAdminNote from "./pages/Invoice/InvoiceAdminNote";
+import InvoiceAuditLog from "./pages/Invoice/InvoiceAuditLogPage";
+import InvoiceSmartMergePage from "./pages/Invoice/InvoiceSmartMerge";
+import InvoiceAdminNotePage from "./pages/invoice-admin-note/[invoiceId]";
+import InvoiceEscrowInfo from "./pages/invoices/[id]/escrowInfo";
+import StatusTrackerPage from "./pages/invoices/[id]/statusTracker";
+// Admin Pages
+import AdminUploadForm from "./pages/admin/AdminUploadForm";
+import UploadLogsPage from "./pages/admin/UploadLogsPage";
+import RollbackManager from "./pages/admin/RollbackManager";
+import AuditTrailPage from "./pages/admin/AuditTrailPage";
+import FlaggedProductsPage from "./pages/admin/FlaggedProductsPage";
+import RotationManager from "./pages/admin/RotationManager";
+import TodayVendorViewer from "./pages/admin/TodayVendorViewer";
+
+
 
 function App() {
   return (
@@ -798,6 +808,14 @@ function App() {
                 </PrivateRoute>
               }
             />
+            {/* <---------Monster product Add-----------> */}
+            <Route path="/admin/upload" element={<AdminUploadForm />} />
+            <Route path="/admin/upload-logs" element={<UploadLogsPage />} />
+            <Route path="/admin/rollback" element={<RollbackManager />} />
+            <Route path="/admin/audit" element={<AuditTrailPage />} />
+            <Route path="/admin/flagged" element={<FlaggedProductsPage />} />
+            <Route path="/admin/rotation" element={<RotationManager />} />
+            <Route path="/admin/today-vendor" element={<TodayVendorViewer />} />
             {/*<--------Invoice Pages------>*/}
             <Route
               path="/invoice-Dashboard"
@@ -824,21 +842,14 @@ function App() {
               }
             />
             <Route
-              path="/invoice-details"
+              path="/invoice-details/:id"
               element={
                 <PrivateRoute>
                   <InvoiceDetailPage />
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/invoice-edit"
-              element={
-                <PrivateRoute>
-                  <InvoiceEditPage />
-                </PrivateRoute>
-              }
-            />
+            <Route path="/invoice-edit/:id" element={<InvoiceEditPage />} />
             <Route
               path="/invoice-preview"
               element={
@@ -856,15 +867,15 @@ function App() {
               }
             />
             <Route
-              path="/invoice-statusTracker"
+              path="/invoice-statusTracker/:invoiceId"
               element={
                 <PrivateRoute>
-                  <InvoiceStatusTracker />
+                  <StatusTrackerPage />
                 </PrivateRoute>
               }
             />
             <Route
-              path="/invoice-escrowInfo"
+              path="/invoices/:id/escrowInfo"
               element={
                 <PrivateRoute>
                   <InvoiceEscrowInfo />
@@ -880,7 +891,7 @@ function App() {
               }
             />
             <Route
-              path="/invoice-taxBreakdown"
+              path="/invoice-taxBreakdown/:invoiceId"
               element={
                 <PrivateRoute>
                   <InvoiceTaxBreakdown />
@@ -904,7 +915,7 @@ function App() {
               }
             />
             <Route
-              path="/invoice-printPreview"
+              path="/invoice-printPreview/:id"
               element={
                 <PrivateRoute>
                   <InvoicePrintPreview />
@@ -912,7 +923,7 @@ function App() {
               }
             />
             <Route
-              path="/invoice-summaryBox"
+              path="/invoice-summaryBox/:invoiceId"
               element={
                 <PrivateRoute>
                   <InvoiceSummaryBox />
@@ -928,7 +939,7 @@ function App() {
               }
             />
             <Route
-              path="/invoice-customerSidePreview"
+              path="/invoice-customerSidePreview/:invoiceId"
               element={
                 <PrivateRoute>
                   <InvoiceCustomerSidePreview />
@@ -955,12 +966,12 @@ function App() {
               path="/invoice-smartMerge"
               element={
                 <PrivateRoute>
-                  <InvoiceSmartMerge />
+                  <InvoiceSmartMergePage />
                 </PrivateRoute>
               }
             />
             <Route
-              path="/InvoiceAuditLog"
+              path="/invoice-audit/:id"
               element={
                 <PrivateRoute>
                   <InvoiceAuditLog />
@@ -968,18 +979,10 @@ function App() {
               }
             />
             <Route
-              path="/InvoiceAuditLog"
+              path="/invoice-admin-note/:invoiceId"
               element={
                 <PrivateRoute>
-                  <InvoiceAuditLog />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/InvoiceAdminNote"
-              element={
-                <PrivateRoute>
-                  <InvoiceAdminNote />
+                  <InvoiceAdminNotePage />
                 </PrivateRoute>
               }
             />

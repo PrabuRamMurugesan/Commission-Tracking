@@ -6,6 +6,7 @@ const AuditLogs = require("../models/AuditLogs");
 router.get("/audit-logs", async (req, res) => {
   try {
     const logs = await AuditLogs.find().sort({ date: -1 });
+    console.log("Log Saved")
     res.json(logs);
   } catch (error) {
     console.error("Error fetching audit logs:", error);

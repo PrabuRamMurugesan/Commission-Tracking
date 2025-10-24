@@ -6,9 +6,9 @@ import Vendor from "../../../models/Vendor/Vendor";
 import Cbv from "../../../models/Cbv/Cbv";
 import Franchise from "../../../models/Franchise";
 import TerritoryHead from "../../../models/Territory/TerritoryHead";
-// 1) Set up CORS so your Vite client on 5173 can POST here
+// 1) Set up CORS so your Vite client on 5174 can POST here
 const cors = Cors({
-  origin: "http://localhost:5173",
+  origin: "http://localhost:5174",
   methods: ["POST", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -46,11 +46,13 @@ export default async function handler(req, res) {
   console.log("🗄 building Customer.create() payload…");
 
   // 3) Figure out which field to set on Customer
-  let agentId,franchiseId,territoryId, vendorId, cbvId;
+  let agentId, franchiseId, territoryId, vendorId, cbvId;
   if (referralId) {
     if (await Agent.exists({ _id: referralId })) agentId = referralId;
-    else if (await Franchise.exists({ _id: referralId })) franchiseId = referralId;
-    else if (await TerritoryHead.exists({ _id: referralId })) territoryId = referralId;
+    else if (await Franchise.exists({ _id: referralId }))
+      franchiseId = referralId;
+    else if (await TerritoryHead.exists({ _id: referralId }))
+      territoryId = referralId;
     else if (await Vendor.exists({ _id: referralId })) vendorId = referralId;
     else if (await Cbv.exists({ _id: referralId })) cbvId = referralId;
   }

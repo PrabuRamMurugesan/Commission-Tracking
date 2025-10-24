@@ -1,9 +1,11 @@
 import Cors from "cors";
 
-// Initializing the cors middleware
+// ✅ Secure and working CORS config
 const cors = Cors({
-  methods: ["GET", "POST", "OPTIONS"], // Allow these
-  origin: "*", // You can restrict this to only localhost:5173 if needed
+  origin: "http://localhost:5174", // restrict to your frontend only
+  methods: ["GET", "POST", "OPTIONS"],
+  credentials: true, // ✅ Allow cookies/auth headers
+  allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allow Authorization header
 });
 
 function runMiddleware(req, res, fn) {

@@ -90,6 +90,12 @@ function DashboardPage() {
               User Management
             </button>
             <button
+              className="btn btn-primary mx-2"
+              onClick={() => navigate("/upload")} // Navigate to POS page
+            >
+              Bulk Product Upload
+            </button>
+            <button
               className="btn btn-secondary mx-2"
               onClick={() => navigate("/")} // Navigate to Dashboard page
             >

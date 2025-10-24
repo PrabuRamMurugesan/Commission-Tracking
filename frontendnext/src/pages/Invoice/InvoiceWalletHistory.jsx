@@ -1,126 +1,213 @@
-import React, { useState } from "react";
-import { Table, Button, Form, Row, Col, Card, Badge } from "react-bootstrap";
+// File: InvoiceWalletHistory.jsx
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Form,
+  Button,
+  Table,
+  Spinner,
+  Badge,
+} from "react-bootstrap";
+import { Link, useParams } from "react-router-dom";
 
-const InvoiceWalletHistory = () => {
+export default function InvoiceWalletHistory() {
+  const { invoiceId } = useParams();
+
+  const [data, setData] = useState({ summary: {}, transactions: [] });
   const [filters, setFilters] = useState({
     search: "",
-    platform: "",
-    type: "",
-    status: "",
+    platform: "All",
+    type: "All",
+    status: "All",
   });
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
-  const walletData = [
-    {
-      txnId: "WLTX12345",
-      date: "2025-06-05",
-      invoiceId: "INV001",
-      escrowId: "ESC789",
-      platform: "Golddex",
-      type: "Credit",
-      reason: "Partial Payment",
-      amount: "₹1,200",
-      status: "Completed",
-      notes: "Auto-linked from Golddex",
-    },
-    {
-      txnId: "WLTX67890",
-      date: "2025-06-04",
-      invoiceId: "INV002",
-      escrowId: "ESC222",
-      platform: "BBSCART",
-      type: "Debit",
-      reason: "Refund to Wallet",
-      amount: "₹800",
-      status: "Pending",
-      notes: "Awaiting admin confirmation",
-    },
-  ];
+  useEffect(fetchHistory, []);
+  function fetchHistory() {
+    setLoading(true);
+    const params = new URLSearchParams(filters).toString();
+    fetch(`/api/wallet-history?invoiceId=${invoiceId}`)
+      .then((r) => r.json())
+      .then(({ success, summary, transactions }) => {
+        if (!success) throw new Error("Failed to load");
+        console.log("Wallet history API returned:", data);
+
+        setData({ summary, transactions });
+      })
+      .catch((err) => alert(err.message || "Server error"))
+      .finally(() => setLoading(false));
+  }
+
+  const handleFilter = (e) => {
+    const { name, value } = e.target;
+    setFilters((f) => ({ ...f, [name]: value }));
+  };
+
+  const applyFilters = () => {
+    setPage(1);
+    fetchHistory();
+  };
+  const resetFilters = () => {
+    setFilters({ search: "", platform: "All", type: "All", status: "All" });
+    setPage(1);
+    fetchHistory();
+  };
+
+  const exportCSV = () => {
+    const header = [
+      "Txn ID",
+      "Date",
+      "Invoice ID",
+      "Escrow ID",
+      "Platform",
+      "Type",
+      "Reason",
+      "Amount",
+      "Status",
+      "Notes",
+    ];
+    const rows = data.transactions.map((tx) => [
+      tx.txnId,
+      new Date(tx.date).toLocaleDateString(),
+      tx.invoiceId,
+      tx.escrowId,
+      tx.platform,
+      tx.type,
+      tx.reason,
+      `₹${tx.amount}`,
+      tx.status,
+      tx.notes,
+    ]);
+    const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "wallet_history.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // pagination slice
+  const total = data.transactions.length;
+  const from = (page - 1) * perPage;
+  const slice = data.transactions.slice(from, from + perPage);
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center">
+        <Spinner animation="border" />
+      </Container>
+    );
+  }
 
   return (
-    <div className="container mt-4">
-      <h4>Invoice Wallet History</h4>
+    <Container className="py-4">
+      <h3>Invoice Wallet History</h3>
 
-      {/* KPI Tiles */}
-      <Row className="mb-4">
-        <Col md={3}>
-          <Card body>Total Wallet Usage: ₹2,000</Card>
-        </Col>
-        <Col md={3}>
-          <Card body>Escrow Linked: ₹1,500</Card>
-        </Col>
-        <Col md={3}>
-          <Card body>Refunded: ₹800</Card>
-        </Col>
-        <Col md={3}>
-          <Card body>Pending Actions: 1</Card>
-        </Col>
+      {/* Summary Cards */}
+      <Row className="g-3 mb-3">
+        {[
+          {
+            label: "Total Wallet Usage",
+            value: `₹${data.summary.totalUsage || 0}`,
+          },
+          {
+            label: "Escrow Linked",
+            value: `₹${data.summary.escrowLinked || 0}`,
+          },
+          { label: "Refunded", value: `₹${data.summary.refunded || 0}` },
+          { label: "Pending Actions", value: data.summary.pendingActions || 0 },
+        ].map((c, i) => (
+          <Col md={3} key={i}>
+            <Card>
+              <Card.Body>
+                <Card.Title style={{ fontSize: "1rem" }}>{c.label}</Card.Title>
+                <Card.Text style={{ fontSize: "1.25rem", fontWeight: "500" }}>
+                  {c.value}
+                </Card.Text>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
       </Row>
 
       {/* Filters */}
       <Form className="mb-3">
-        <Row>
+        <Row className="g-2 align-items-end">
           <Col md={3}>
+            <Form.Label>Search Txn ID / Invoice ID</Form.Label>
             <Form.Control
-              type="text"
-              placeholder="Search Txn ID / Invoice ID"
+              name="search"
               value={filters.search}
-              onChange={(e) =>
-                setFilters({ ...filters, search: e.target.value })
-              }
+              onChange={handleFilter}
             />
           </Col>
           <Col md={3}>
+            <Form.Label>Filter by Platform</Form.Label>
             <Form.Select
+              name="platform"
               value={filters.platform}
-              onChange={(e) =>
-                setFilters({ ...filters, platform: e.target.value })
-              }
+              onChange={handleFilter}
             >
-              <option value="">Filter by Platform</option>
-              <option>Golddex</option>
+              <option>All</option>
               <option>BBSCART</option>
-              <option>Delivery</option>
-              <option>Emerjobs</option>
+              <option>Golddex</option>
+              <option>EmerJobs</option>
+              <option>Thiaworld</option>
             </Form.Select>
           </Col>
-          <Col md={3}>
+          <Col md={2}>
+            <Form.Label>Type</Form.Label>
             <Form.Select
+              name="type"
               value={filters.type}
-              onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+              onChange={handleFilter}
             >
-              <option value="">Type</option>
+              <option>All</option>
               <option>Credit</option>
               <option>Debit</option>
-              <option>Refund</option>
-              <option>Hold</option>
-              <option>Manual</option>
             </Form.Select>
           </Col>
-          <Col md={3}>
+          <Col md={2}>
+            <Form.Label>Status</Form.Label>
             <Form.Select
+              name="status"
               value={filters.status}
-              onChange={(e) =>
-                setFilters({ ...filters, status: e.target.value })
-              }
+              onChange={handleFilter}
             >
-              <option value="">Status</option>
+              <option>All</option>
               <option>Completed</option>
               <option>Pending</option>
-              <option>Reversed</option>
             </Form.Select>
+          </Col>
+          <Col md={2} className="d-grid">
+            <Button onClick={applyFilters}>Apply Filters</Button>
+            <Button variant="secondary" onClick={resetFilters} className="mt-1">
+              Reset
+            </Button>
           </Col>
         </Row>
       </Form>
 
-      {/* Export Options */}
-      <div className="mb-3 d-flex justify-content-end gap-2">
-        <Button variant="success">Export CSV</Button>
-        <Button variant="secondary">Export PDF</Button>
-        <Button variant="primary">Print Ledger</Button>
-      </div>
+      {/* Export / Print Buttons */}
+      <Row className="mb-3">
+        <Col>
+          <Button variant="success" onClick={exportCSV}>
+            Export CSV
+          </Button>{" "}
+          <Button variant="secondary">Export PDF</Button>{" "}
+          <Button variant="primary">Print Ledger</Button>
+        </Col>
+      </Row>
 
-      {/* Wallet Transaction Table */}
-      <Table bordered hover responsive>
+      {/* Transactions Table */}
+      <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>Txn ID</th>
@@ -137,35 +224,60 @@ const InvoiceWalletHistory = () => {
           </tr>
         </thead>
         <tbody>
-          {walletData.map((txn, idx) => (
-            <tr key={idx}>
-              <td>{txn.txnId}</td>
-              <td>{txn.date}</td>
+          {slice.map((tx) => (
+            <tr key={tx.txnId}>
+              <td>{tx.txnId}</td>
+              <td>{new Date(tx.date).toLocaleDateString()}</td>
               <td>
-                <Button variant="link">{txn.invoiceId}</Button>
+                <Link to={`/invoice-details/${tx.invoiceId}`}>
+                  {tx.invoiceId}
+                </Link>
               </td>
-              <td>{txn.escrowId}</td>
+              <td>{tx.escrowId}</td>
               <td>
-                <Badge bg="info">{txn.platform}</Badge>
+                <Badge bg="info">{tx.platform}</Badge>
               </td>
-              <td>{txn.type}</td>
-              <td>{txn.reason}</td>
-              <td>{txn.amount}</td>
               <td>
-                <Badge bg={txn.status === "Completed" ? "success" : "warning"}>
-                  {txn.status}
+                <Badge bg={tx.type === "Credit" ? "success" : "warning"}>
+                  {tx.type}
                 </Badge>
               </td>
-              <td>{txn.notes}</td>
+              <td>{tx.reason}</td>
+              <td>₹{tx.amount}</td>
               <td>
-                <Button size="sm">View</Button>
+                <Badge bg={tx.status === "Completed" ? "success" : "warning"}>
+                  {tx.status}
+                </Badge>
+              </td>
+              <td>{tx.notes}</td>
+              <td>
+                <Link to={`/wallet-history/${tx.txnId}`}>
+                  <Button size="sm">View</Button>
+                </Link>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
-    </div>
-  );
-};
 
-export default InvoiceWalletHistory;
+      {/* Pagination */}
+      <Row className="align-items-center">
+        <Col>
+          Showing {from + 1} to {Math.min(from + perPage, total)} of {total}{" "}
+          transactions
+        </Col>
+        <Col className="text-end">
+          <Button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+            Prev
+          </Button>{" "}
+          <Button
+            disabled={page * perPage >= total}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </Button>
+        </Col>
+      </Row>
+    </Container>
+  );
+}

@@ -34,7 +34,7 @@ const LoginPage = () => {
      } else if (role === "agent") {
        navigate("/dashboard/agent");
      } else if (role === "vendor") {
-       navigate("dashboard/customer-vendor");
+       navigate("dashboard");
      } else if (role === "territory-head") {
        navigate("dashboard/territory");
      } else if (role === "customer-become-vendor") {

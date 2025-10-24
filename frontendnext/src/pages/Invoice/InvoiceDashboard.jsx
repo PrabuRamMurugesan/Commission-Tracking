@@ -113,7 +113,7 @@ const InvoiceDashboard = () => {
     { label: "RecurringSetup", path: "/invoice-recurringSetup", icon: "bi-download" },
     { label: "SummaryBox", path: "/invoice-summaryBox", icon: "bi-download" },
     { label: "AuditLog", path: "/InvoiceAuditLog", icon: "bi-download" },
-
+    
   ];
   useEffect(() => {
     fetchDashboardData();
@@ -137,7 +137,7 @@ const InvoiceDashboard = () => {
   };
   
   return (
-    <Container fluid className="mt-2">
+    <Container fluid className="mt">
       <Row>
         {Object.entries(dummyKPIs).map(([key, value], index) => (
           <Col key={index} md={3} className="mb-3">
@@ -234,6 +234,14 @@ const InvoiceDashboard = () => {
             }}
           >
             Status Tracker
+          </Button>
+          <Button
+            variant="outline-dark"
+            onClick={() => {
+              navigate("/invoice-smartMerge");
+            }}
+          >
+            SmartMerge
           </Button>
         </Col>
       </Row>

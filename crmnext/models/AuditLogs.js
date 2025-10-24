@@ -1,11 +1,26 @@
-const mongoose = require("mongoose");
+// models/AuditLogs.js
+import mongoose from "mongoose";
 
-const AuditLogsSchema = new mongoose.Schema({
-  user: { type: String, required: true },
-  role: { type: String, enum: ["Admin", "Franchise", "Territory Head", "Agent", "Vendor", "Referral"], required: true },
-  action: { type: String, required: true },
-  description: { type: String, required: true },
-  date: { type: Date, default: Date.now },
+const auditSchema = new mongoose.Schema({
+  user: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+  },
+  action: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model("AuditLogs", AuditLogsSchema);
+export default mongoose.models.AuditLogs ||
+  mongoose.model("AuditLogs", auditSchema);

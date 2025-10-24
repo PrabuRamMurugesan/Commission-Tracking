@@ -1,0 +1,28 @@
+/* Hide navbar and any .no-print elements when printing */
+@media print {
+    body * {
+      visibility: hidden;
+    }
+    .print-container, .print-container * {
+      visibility: visible;
+    }
+    .print-container {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+  }
+  
+  /* Ensure non-print elements (buttons etc.) are hidden */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Center and constrain the print card */
+  .print-container {
+    max-width: 800px;
+    margin: auto;
+    background: #fff;
+  }
+  

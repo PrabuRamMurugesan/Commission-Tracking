@@ -5,7 +5,7 @@ import { getCustomersByRole } from "../../../controllers/common/getCustomersByRo
 
 // 1) CORS config
 const cors = Cors({
-  origin: "http://localhost:5173",
+  origin: "http://localhost:5174",
   methods: ["GET", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
     "agent",
     "vendor",
     "cbv",
-    "franchise"
+    "franchise",
   ];
   if (!ALLOWED.includes(user.role)) {
     return res.status(403).json({ message: "Forbidden" });

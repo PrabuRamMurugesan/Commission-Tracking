@@ -1,73 +1,104 @@
-// InvoiceTaxBreakdown.jsx — Page 11 of 18
+// File: InvoiceTaxBreakdown.jsx
+import React, { useState, useEffect } from "react";
+import { useParams, Link, } from "react-router-dom";
+import {
+  Container,
+  Table,
+  Button,
+  Row,
+  Col,
+  Form,
+  Spinner,
+  Badge,
+} from "react-bootstrap";
 
-import React, { useState } from "react";
-import { Table, Button, Form, Row, Col, Modal, Alert } from "react-bootstrap";
+export default function InvoiceTaxBreakdown() {
+  const { invoiceId } = useParams();
+  console.log("Param from URL:", useParams());
+  console.log("invoiceId", useParams());
 
-const InvoiceTaxBreakdown = () => {
-  const [taxRows, setTaxRows] = useState([
-    {
-      id: 1,
-      taxType: "CGST",
-      taxCategory: "Goods",
-      hsn: "8523",
-      gstSlab: "18%",
-      taxableValue: 10000,
-      taxAmount: 1800,
-      jurisdiction: "Tamil Nadu",
-      gstinSeller: "29ABCDE1234F1Z5",
-      gstinBuyer: "33FGHIJ5678K2L1",
-      reverseCharge: false,
-      invoiceType: "Intra-State",
-      notes: "Standard GST slab applied",
-      platform: "BBSCART",
-    },
-  ]);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddRow = () => {
-    setTaxRows([
-      ...taxRows,
-      {
-        id: taxRows.length + 1,
-        taxType: "",
-        taxCategory: "",
-        hsn: "",
-        gstSlab: "",
-        taxableValue: "",
-        taxAmount: "",
-        jurisdiction: "",
-        gstinSeller: "",
-        gstinBuyer: "",
-        reverseCharge: false,
-        invoiceType: "",
-        notes: "",
-        platform: "",
-      },
-    ]);
+  // Fetch existing rows
+  useEffect(() => {
+    fetch(`/api/invoice-taxBreakdown?invoiceId=${invoiceId}`)
+      .then((r) => r.json())
+      .then(({ success, rows }) => {
+        if (!success) throw new Error("Failed to load");
+        setRows(rows);
+      })
+      .catch((err) => alert(err.message))
+      .finally(() => setLoading(false));
+  }, [invoiceId]);
+
+  // Add a blank row
+  const addRow = () => {
+    fetch("/api/invoice-taxBreakdown", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ invoiceId }),
+    })
+      .then((r) => r.json())
+      .then(({ success, row }) => {
+        if (!success) throw new Error("Failed to create");
+        setRows((rs) => [...rs, row]);
+      })
+      .catch((err) => alert(err.message));
   };
 
-  const handleInputChange = (index, field, value) => {
-    const updated = [...taxRows];
-    updated[index][field] = value;
-    if (field === "taxableValue" || field === "gstSlab") {
-      const slab = parseFloat(updated[index].gstSlab.replace("%", ""));
-      const val = parseFloat(updated[index].taxableValue);
-      if (!isNaN(slab) && !isNaN(val)) {
-        updated[index].taxAmount = ((val * slab) / 100).toFixed(2);
-      }
-    }
-    setTaxRows(updated);
+  // Update a field
+  const updateField = (id, field, value) => {
+    fetch(`/api/invoice-taxBreakdown/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: value }),
+    })
+      .then((r) => r.json())
+      .then(({ success, row }) => {
+        if (!success) throw new Error("Update failed");
+        setRows((rs) => rs.map((rw) => (rw._id === id ? row : rw)));
+      })
+      .catch((err) => console.error(err));
   };
+
+  // Delete a row
+  const deleteRow = (id) => {
+    if (!window.confirm("Delete this row?")) return;
+    fetch(`/api/invoice-taxBreakdown/${invoiceId}`, { method: "DELETE" })
+      .then((r) => r.json())
+      .then(({ success }) => {
+        if (success) {
+          setRows((rs) => rs.filter((rw) => rw.invoiceId !== invoiceId));
+        }
+      });
+  };
+
+  if (loading) {
+    return (
+      <Container className="py-5 text-center">
+        <Spinner animation="border" />
+      </Container>
+    );
+  }
 
   return (
-    <div className="container mt-4">
-      <h4 className="mb-3">GST Tax Breakdown (Invoice-wise)</h4>
+    <Container className="py-4">
+      <h3>GST Tax Breakdown (Invoice-wise)</h3>
+      <div className="mb-3">
+        <Link to={`/invoice-details/${invoiceId}`}>
+          <Button variant="secondary">‹ Back to Invoice</Button>
+        </Link>
+        <Button variant="success" onClick={addRow}>
+          + Add Tax Row
+        </Button>
+        <Link to={`/invoice-statusTracker/${invoiceId}`}>
+          <Button variant="secondary">Invoice Status Tracker</Button>
+        </Link>
+      </div>
 
-      <Button variant="success" onClick={handleAddRow} className="mb-3">
-        ➕ Add Tax Row
-      </Button>
-
-      <Table bordered hover responsive>
-        <thead className="table-dark">
+      <Table bordered responsive>
+        <thead>
           <tr>
             <th>#</th>
             <th>Tax Type</th>
@@ -87,146 +118,138 @@ const InvoiceTaxBreakdown = () => {
           </tr>
         </thead>
         <tbody>
-          {taxRows.map((row, i) => (
-            <tr key={row.id}>
+          {rows.map((r, i) => (
+            <tr key={r._id}>
               <td>{i + 1}</td>
               <td>
                 <Form.Select
-                  value={row.taxType}
+                  value={r.taxType}
                   onChange={(e) =>
-                    handleInputChange(i, "taxType", e.target.value)
+                    updateField(r._id, "taxType", e.target.value)
                   }
                 >
-                  <option>CGST</option>
-                  <option>SGST</option>
-                  <option>IGST</option>
-                  <option>Custom</option>
-                  <option>Cess</option>
+                  <option value="C">C</option>
+                  <option value="S">S</option>
                 </Form.Select>
               </td>
               <td>
                 <Form.Select
-                  value={row.taxCategory}
+                  value={r.category}
                   onChange={(e) =>
-                    handleInputChange(i, "taxCategory", e.target.value)
+                    updateField(r._id, "category", e.target.value)
                   }
                 >
                   <option>Goods</option>
                   <option>Services</option>
-                  <option>Combo</option>
-                  <option>Exempt</option>
                 </Form.Select>
               </td>
               <td>
                 <Form.Control
-                  type="text"
-                  value={row.hsn}
-                  onChange={(e) => handleInputChange(i, "hsn", e.target.value)}
+                  value={r.hsnSac || ""}
+                  onChange={(e) => updateField(r._id, "hsnSac", e.target.value)}
                 />
-              </td>
-              <td>
-                <Form.Select
-                  value={row.gstSlab}
-                  onChange={(e) =>
-                    handleInputChange(i, "gstSlab", e.target.value)
-                  }
-                >
-                  <option>0%</option>
-                  <option>5%</option>
-                  <option>12%</option>
-                  <option>18%</option>
-                  <option>28%</option>
-                </Form.Select>
               </td>
               <td>
                 <Form.Control
                   type="number"
-                  value={row.taxableValue}
+                  value={r.gstPercent || 0}
                   onChange={(e) =>
-                    handleInputChange(i, "taxableValue", e.target.value)
-                  }
-                />
-              </td>
-              <td>
-                <Form.Control type="text" value={row.taxAmount} readOnly />
-              </td>
-              <td>
-                <Form.Control
-                  type="text"
-                  value={row.jurisdiction}
-                  onChange={(e) =>
-                    handleInputChange(i, "jurisdiction", e.target.value)
+                    updateField(r._id, "gstPercent", parseFloat(e.target.value))
                   }
                 />
               </td>
               <td>
                 <Form.Control
-                  type="text"
-                  value={row.gstinSeller}
+                  type="number"
+                  value={r.taxableValue || 0}
                   onChange={(e) =>
-                    handleInputChange(i, "gstinSeller", e.target.value)
+                    updateField(
+                      r._id,
+                      "taxableValue",
+                      parseFloat(e.target.value)
+                    )
                   }
                 />
               </td>
               <td>
                 <Form.Control
-                  type="text"
-                  value={row.gstinBuyer}
+                  type="number"
+                  value={r.gstAmount || 0}
                   onChange={(e) =>
-                    handleInputChange(i, "gstinBuyer", e.target.value)
+                    updateField(r._id, "gstAmount", parseFloat(e.target.value))
                   }
                 />
               </td>
               <td>
+                <Form.Control
+                  value={r.jurisdiction || ""}
+                  onChange={(e) =>
+                    updateField(r._id, "jurisdiction", e.target.value)
+                  }
+                />
+              </td>
+              <td>
+                <Form.Control
+                  value={r.sellerGSTIN || ""}
+                  onChange={(e) =>
+                    updateField(r._id, "sellerGSTIN", e.target.value)
+                  }
+                />
+              </td>
+              <td>
+                <Form.Control
+                  value={r.buyerGSTIN || ""}
+                  onChange={(e) =>
+                    updateField(r._id, "buyerGSTIN", e.target.value)
+                  }
+                />
+              </td>
+              <td className="text-center">
                 <Form.Check
                   type="switch"
-                  checked={row.reverseCharge}
+                  checked={r.reverseCharge}
                   onChange={(e) =>
-                    handleInputChange(i, "reverseCharge", e.target.checked)
-                  }
-                />
-              </td>
-              <td>
-                <Form.Control
-                  type="text"
-                  value={row.invoiceType}
-                  onChange={(e) =>
-                    handleInputChange(i, "invoiceType", e.target.value)
+                    updateField(r._id, "reverseCharge", e.target.checked)
                   }
                 />
               </td>
               <td>
                 <Form.Select
-                  value={row.platform}
+                  value={r.invoiceType}
                   onChange={(e) =>
-                    handleInputChange(i, "platform", e.target.value)
+                    updateField(r._id, "invoiceType", e.target.value)
+                  }
+                >
+                  <option>Intra-State</option>
+                  <option>Inter-State</option>
+                </Form.Select>
+              </td>
+              <td>
+                <Form.Select
+                  value={r.platform}
+                  onChange={(e) =>
+                    updateField(r._id, "platform", e.target.value)
                   }
                 >
                   <option>BBSCART</option>
                   <option>Golddex</option>
-                  <option>Delivery App</option>
-                  <option>Emerjobs</option>
+                  <option>EmerJobs</option>
+                  <option>Thiaworld</option>
                 </Form.Select>
               </td>
               <td>
                 <Form.Control
-                  type="text"
-                  value={row.notes}
-                  onChange={(e) =>
-                    handleInputChange(i, "notes", e.target.value)
-                  }
+                  value={r.notes || ""}
+                  onChange={(e) => updateField(r._id, "notes", e.target.value)}
                 />
               </td>
               <td>
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => {
-                    const updated = taxRows.filter((_, index) => index !== i);
-                    setTaxRows(updated);
-                  }}
+                  onClick={() => deleteRow(r._id)}
                 >
-                  🗑
+                  🗑️
                 </Button>
               </td>
             </tr>
@@ -234,13 +257,13 @@ const InvoiceTaxBreakdown = () => {
         </tbody>
       </Table>
 
-      <div className="d-flex gap-3 mt-3">
-        <Button variant="primary">📤 Export GST Breakdown</Button>
-        <Button variant="secondary">🧠 AI Validate Entries</Button>
-        <Button variant="info">🔍 GST Filing Assistant Sync</Button>
-      </div>
-    </div>
+      <Row className="mt-3">
+        <Col>
+          <Button variant="primary">Export GST Breakdown</Button>{" "}
+          <Button variant="secondary">AI Validate Entries</Button>{" "}
+          <Button variant="info">GST Filing Assistant Sync</Button>
+        </Col>
+      </Row>
+    </Container>
   );
-};
-
-export default InvoiceTaxBreakdown;
+}

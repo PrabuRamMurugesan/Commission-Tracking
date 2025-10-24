@@ -1,100 +1,102 @@
-// /pages/api/invoices/index.js
-import dbConnect from "../../../utils/dbConnect";
-import Invoice from "../../../models/Invoice/Invoice";
-const generateInvoiceNumber = async () => {
-  const prefix = "INV";
-  const random = Math.floor(Math.random() * 100000);
-  const invoiceNumber = `${prefix}${random}`;
+// pages/api/invoices/index.js
+import dbConnect from "../../../lib/mongodb";
+import Invoice from "../../../models/Invoice/invoiceModel";
+import { createInvoice } from "../../../controllers/invoiceController";
 
-  // Check if it already exists
-  const existing = await Invoice.findOne({ invoiceNumber });
-  if (existing) return await generateInvoiceNumber(); // try again
-
-  return invoiceNumber;
-};
 export default async function handler(req, res) {
-  // Function to generate a unique invoice number
-
   await dbConnect();
+
+  if (req.method === "POST") {
+    return createInvoice(req, res);
+  }
+
   if (req.method === "GET") {
     try {
-      const invoices = await Invoice.find({});
-      res.status(200).json({ success: true, invoices });
-    } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
-    }
-  } else {
-    res.status(405).json({ success: false, message: "Method Not Allowed" });
-  }
-  if (req.method === "POST") {
-    if (req.method === "POST") {
-      try {
-        const invoice = await Invoice.create(req.body);
-        res.status(200).json({ success: true, data: invoice });
-      } catch (error) {
-        console.error("Create Invoice Error:", error.message);
-        res.status(400).json({ success: false, message: error.message });
-      }
-    } else {
-      res.setHeader("Allow", ["POST"]);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
-    }
-    try {
+      // 1) pull all filter params
       const {
-        invoiceNumber,
-        invoiceDate,
+        invoiceId,
+        customer,
+        gstin,
         platform,
-        status,
-        buyer,
-        seller,
-        items,
-        payment,
-        totalAmount,
-        totalGST,
-        grandTotal,
-        notes,
-        createdBy,
-        dueDate,
-      } = req.body;
+        role,
+        paymentStatus,
+        fromDate,
+        toDate,
+        invoiceType,
+        gstType,
+        gstSlab,
+        paymentMethod,
+        search,
+      } = req.query;
 
-      const statusTracker = [
-        {
-          status: "Created",
-          updatedAt: new Date(),
-          updatedBy: createdBy || { userId: null, role: "system" },
-        },
-      ];
+      const query = {};
 
-      const invoice = await Invoice.create({
-        invoiceNumber,
-        invoiceDate,
-        dueDate,
-        platform,
-        status,
-        buyer,
-        seller,
-        items,
-        payment,
-        totalAmount,
-        totalGST,
-        grandTotal,
-        notes,
-        createdBy,
-        statusTracker,
-      });
+      // 2) invoiceId exact match
+      if (invoiceId) {
+        query.invoiceNumber = invoiceId;
+      }
 
-      return res.status(201).json({ success: true, invoice });
+      // 3) free-text search (optional override)
+      if (search) {
+        const re = new RegExp(search, "i");
+        query.$or = [{ invoiceNumber: re }, { buyerName: re }];
+      }
+
+      // 4) other advanced filters
+      if (customer) query.buyerName = new RegExp(customer, "i");
+      if (gstin) query.buyerGSTIN = new RegExp(gstin, "i");
+      if (platform && platform !== "All") query.platform = platform;
+      if (role && role !== "All") query.createdBy = role;
+      if (invoiceType && invoiceType !== "All") query.invoiceType = invoiceType;
+      if (paymentMethod && paymentMethod !== "All")
+        query.paymentMode = paymentMethod;
+      if (gstType && gstType !== "All") query.gstType = gstType;
+      if (gstSlab && gstSlab !== "All") {
+        const slabNum = Number(gstSlab.replace("%", ""));
+        query.items = {
+          $elemMatch: {
+            $or: [{ cgst: slabNum }, { sgst: slabNum }, { igst: slabNum }],
+          },
+        };
+      }
+
+      // 5) paymentStatus
+      if (paymentStatus && paymentStatus !== "All") {
+        if (paymentStatus === "Paid") {
+          query.$expr = { $gte: ["$amountPaid", "$grandTotal"] };
+        } else if (paymentStatus === "Partial") {
+          query.$expr = {
+            $and: [
+              { $gt: ["$amountPaid", 0] },
+              { $lt: ["$amountPaid", "$grandTotal"] },
+            ],
+          };
+        } else if (paymentStatus === "Unpaid") {
+          query.amountPaid = 0;
+        }
+      }
+
+      // 6) date range
+      if (fromDate || toDate) {
+        query.invoiceDate = {};
+        if (fromDate) query.invoiceDate.$gte = new Date(fromDate);
+        if (toDate) query.invoiceDate.$lte = new Date(toDate);
+      }
+
+      // 7) execute
+      const invoices = await Invoice.find(query).sort({ createdAt: -1 });
+      return res.status(200).json({ success: true, invoices });
     } catch (error) {
-      console.error("Create Invoice Error:", error);
-      return res.status(500).json({ success: false, message: "Server Error" });
+      console.error("Fetch Invoices Error:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to fetch invoices" });
     }
   }
-  const invoiceNumber = await generateInvoiceNumber(); // ✅ Backend-only
-  const newInvoice = await Invoice.create({
-    invoiceNumber,
-    ...restOfInvoiceData,
-  });
+
+  // Method not allowed
+  res.setHeader("Allow", ["GET", "POST"]);
   return res
     .status(405)
-    .json({ success: false, message: "Method Not Allowed" });
+    .json({ success: false, message: "Method not allowed" });
 }

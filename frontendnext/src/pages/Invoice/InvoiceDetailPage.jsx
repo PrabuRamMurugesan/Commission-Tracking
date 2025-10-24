@@ -1,166 +1,232 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom"; // Or use router.query if using Next.js routing
+// File: InvoiceDetailsPage.jsx
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  Container,
+  Table,
+  Row,
+  Col,
+  Spinner,
+  Button,
+  Card,
+} from "react-bootstrap";
 
-const InvoiceDetailsPage = () => {
+export default function InvoiceDetailsPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [invoice, setInvoice] = useState(null);
-  const { id } = useParams(); // Or const { id } = router.query;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchInvoice = async () => {
-      try {
-        const res = await axios.get(`/api/invoices/${id}`);
-        
-        if (res.data.success) {
-          setInvoice(res.data.data);
-          console.log(res.data.data, "response for the Details");
+    if (!id) {
+      alert("No invoice selected");
+      return navigate("/invoice-list");
+    }
+    fetch(`/api/invoices/${id}`)
+      .then((res) => res.json())
+      .then(({ success, invoice }) => {
+        if (!success) throw new Error("Invoice not found");
+        setInvoice(invoice);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to load invoice");
+        navigate("/invoice-list");
+      })
+      .finally(() => setLoading(false));
+  }, [id, navigate]);
 
-        }
-      } catch (err) {
-        console.error("Error loading invoice:", err.message);
-      }
-    };
+  if (loading) {
+    return (
+      <Container className="py-5 text-center">
+        <Spinner animation="border" />
+      </Container>
+    );
+  }
+  if (!invoice) {
+    return (
+      <Container className="py-5 text-center">
+        <p>Invoice not found.</p>
+        <Link to="/invoice-list">
+          <Button>Back to List</Button>
+        </Link>
+      </Container>
+    );
+  }
 
-    fetchInvoice();
-  }, [id]);
-
-  if (!invoice)
-    return <div className="container mt-5">Loading invoice details...</div>;
-
-  const {
-    buyer,
-    seller,
-    items,
-    payment,
-    totalAmount,
-    totalGST,
-    grandTotal,
-    createdBy,
-    notes,
-    invoiceNumber,
-    invoiceDate,
-    platform,
-    status,
-  } = invoice;
+  // Pre-calc summary
+  const taxable = invoice.subtotal;
+  const cgstAmt = (taxable * invoice.globalCGST) / 100;
+  const sgstAmt = (taxable * invoice.globalSGST) / 100;
+  const igstAmt = (taxable * invoice.globalIGST) / 100;
+  const totalTax = cgstAmt + sgstAmt + igstAmt;
+  const grandTotal = invoice.finalPayable;
+  const paid = invoice.amountPaid || 0;
+  const wallet = invoice.walletPaid || 0;
+  const escrow = invoice.escrowHeld || 0;
+  const pending = grandTotal - paid;
 
   return (
-    <div className="container mt-5">
-      <h3>
-        Invoice ID: {invoiceNumber}{" "}
-        <span className="badge bg-warning text-dark">{status}</span>
-      </h3>
+    <Container className="py-4">
+      <h3 className="mb-4">Invoice Details – {invoice.invoiceNumber}</h3>
 
-      <div className="row mt-3">
-        <div className="col-md-6">
-          <h5>Invoice Info</h5>
-          <p>
-            <strong>Date:</strong> {invoiceDate}
-          </p>
-          <p>
-            <strong>Platform:</strong> {platform}
-          </p>
-          <p>
-            <strong>Created By:</strong> {createdBy?.role || "Admin"}
-          </p>
-        </div>
+      {/* NAV ACTIONS */}
+      <Row className="mb-3">
+        <Col>
+          {/* Back to list */}
+          <Link to="/invoice-list">
+            <Button variant="secondary" size="sm">
+              &larr; Back to List
+            </Button>
+          </Link>
+          {/* Print Preview */}
+          <Link to={`/invoice-printPreview/${invoice._id}`}>
+            <Button variant="primary" size="sm">
+              Print
+            </Button>
+          </Link>
 
-        <div className="col-md-6">
-          <h5>Customer & Vendor Details</h5>
-          <p>
-            <strong>Buyer:</strong> {buyer?.name}
-          </p>
-          <p>
-            <strong>GSTIN:</strong> {buyer?.gstin}
-          </p>
-          <p>
-            <strong>State:</strong> {buyer?.state}
-          </p>
-          <p>
-            <strong>Seller:</strong> {seller?.name}
-          </p>
-          <p>
-            <strong>GSTIN:</strong> {seller?.gstin}
-          </p>
-          <p>
-            <strong>State:</strong> {seller?.state}
-          </p>
-        </div>
-      </div>
+          <Link to={`/invoice-admin-note/${invoice._id}`}>
+            <Button variant="primary" size="sm">
+              Admin Note
+            </Button>
+          </Link>
+          <Link to={`/invoice-audit/${invoice._id}`}>
+            <Button variant="primary" size="sm">
+              AuditLog
+            </Button>
+          </Link>
+          {/* NEW: GST Tax Breakdown */}
+          <Link to={`/invoice-taxBreakdown/${invoice._id}`}>
+            <Button variant="info" size="sm">
+              GST Tax Breakdown
+            </Button>
+          </Link>
+          <Link to={`/invoices/${invoice._id}/escrowInfo`}>
+            <Button variant="info" size="sm">
+              Escrow Info
+            </Button>
+          </Link>
+          {/* NEW:  Invoice Summary-Box */}
+          <Link to={`/invoice-summaryBox/${invoice._id}`}>
+            <Button variant="warning" size="sm">
+              Invoice Summary
+            </Button>
+          </Link>
+        </Col>
+      </Row>
 
-      <hr />
+      {/* ITEMS / SERVICES */}
+      <Card className="mb-4">
+        <Card.Header>Items / Services</Card.Header>
+        <Table bordered responsive className="mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Item Name</th>
+              <th>HSN Code</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Discount</th>
+              <th>Tax % (CGST+SGST)</th>
+              <th>Tax ₹</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoice.items.map((it, i) => {
+              const gross = it.rate * it.quantity;
+              const discAmt = gross * (it.discount / 100);
+              const taxable = gross - discAmt;
+              const lineTaxPerc =
+                invoice.globalCGST + invoice.globalSGST + invoice.globalIGST;
+              const lineTaxAmt = (taxable * lineTaxPerc) / 100;
+              const lineTotal = taxable + lineTaxAmt;
+              return (
+                <tr key={i}>
+                  <td>{i + 1}</td>
+                  <td>{it.itemName}</td>
+                  <td>{it.hsn}</td>
+                  <td>{it.quantity}</td>
+                  <td>₹{it.rate}</td>
+                  <td>{it.discount}%</td>
+                  <td>
+                    {lineTaxPerc}% ({invoice.globalCGST}% + {invoice.globalSGST}
+                    %{invoice.globalIGST > 0 ? ` + ${invoice.globalIGST}%` : ""}
+                    )
+                  </td>
+                  <td>₹{lineTaxAmt.toFixed(2)}</td>
+                  <td>₹{lineTotal.toFixed(2)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      </Card>
 
-      <h5>Items / Services</h5>
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Item Name</th>
-            <th>HSN Code</th>
-            <th>Qty</th>
-            <th>Rate</th>
-            <th>Tax %</th>
-            <th>Tax ₹</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item, i) => {
-            const gstPercent =
-              (item.cgst || 0) + (item.sgst || 0) + (item.igst || 0);
-            const gstAmount = (item.amount * gstPercent) / 100;
-            return (
-              <tr key={i}>
-                <td>{i + 1}</td>
-                <td>{item.name}</td>
-                <td>{item.hsn}</td>
-                <td>1</td>
-                <td>₹{item.amount}</td>
-                <td>{gstPercent}%</td>
-                <td>₹{gstAmount.toFixed(2)}</td>
-                <td>₹{(item.amount + gstAmount).toFixed(2)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      <hr />
-      <h5>Payment Summary & GST Breakdown</h5>
-      <ul className="list-group mb-3">
-        <li className="list-group-item d-flex justify-content-between">
-          <strong>Subtotal</strong> ₹{totalAmount}
-        </li>
-        <li className="list-group-item d-flex justify-content-between">
-          Total GST ₹{totalGST}
-        </li>
-        <li className="list-group-item d-flex justify-content-between fw-bold">
-          Grand Total ₹{grandTotal}
-        </li>
-        <li className="list-group-item d-flex justify-content-between">
-          Paid ₹{payment?.amountPaid}
-        </li>
-        <li className="list-group-item d-flex justify-content-between">
-          Escrow: {payment?.isEscrow ? "Yes" : "No"} | Partial:{" "}
-          {payment?.isPartialPayment ? "Yes" : "No"}
-        </li>
-      </ul>
-
-      <h5>Terms & Notes</h5>
-      <p>{notes || "No additional notes."}</p>
-
-      <div className="mt-4">
-        <button className="btn btn-outline-primary me-2">
-          View GST Breakdown
-        </button>
-        <button className="btn btn-outline-info me-2">Wallet History</button>
-        <button className="btn btn-outline-success me-2">
-          Customer Invoice
-        </button>
-        <button className="btn btn-warning me-2">AI Suggest Action</button>
-        <button className="btn btn-danger">Cancel / Refund</button>
-      </div>
-    </div>
+      {/* PAYMENT SUMMARY & GST BREAKDOWN */}
+      <Card>
+        <Card.Header>Payment Summary &amp; GST Breakdown</Card.Header>
+        <Card.Body>
+          <Row className="mb-3">
+            <Col md={4}>
+              <strong>Taxable Subtotal:</strong> ₹{taxable}
+            </Col>
+            <Col md={4}>
+              <strong>Shipping Charges:</strong> ₹{invoice.shippingCharges}
+            </Col>
+            <Col md={4}>
+              <strong>Other Charges:</strong> ₹{invoice.otherCharges}
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col md={4}>
+              <strong>Invoice Type:</strong> {invoice.invoiceType}
+            </Col>
+            <Col md={4}>
+              <strong>CGST %:</strong> {invoice.globalCGST}% &nbsp;{" "}
+              <strong>₹{cgstAmt.toFixed(2)}</strong>
+            </Col>
+            <Col md={4}>
+              <strong>SGST %:</strong> {invoice.globalSGST}% &nbsp;{" "}
+              <strong>₹{sgstAmt.toFixed(2)}</strong>
+            </Col>
+          </Row>
+          {invoice.globalIGST > 0 && (
+            <Row className="mb-3">
+              <Col md={4}>
+                <strong>IGST %:</strong> {invoice.globalIGST}% &nbsp;{" "}
+                <strong>₹{igstAmt.toFixed(2)}</strong>
+              </Col>
+            </Row>
+          )}
+          <hr />
+          <Row className="mb-2">
+            <Col md={4}>
+              <strong>Total Tax Amount:</strong> ₹{totalTax.toFixed(2)}
+            </Col>
+            <Col md={4}>
+              <strong>Grand Total:</strong> ₹{grandTotal.toFixed(2)}
+            </Col>
+          </Row>
+          <Row className="mb-2">
+            <Col md={4}>
+              <strong>Amount Paid:</strong> ₹{paid.toFixed(2)}
+            </Col>
+            <Col md={4}>
+              <strong>Paid via Wallet:</strong> ₹{wallet.toFixed(2)}
+            </Col>
+          </Row>
+          <Row>
+            <Col md={4}>
+              <strong>Escrow Held:</strong> ₹{escrow.toFixed(2)}
+            </Col>
+            <Col md={4}>
+              <strong>Pending Amount:</strong> ₹{pending.toFixed(2)}
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </Container>
   );
-};
-
-export default InvoiceDetailsPage;
+}

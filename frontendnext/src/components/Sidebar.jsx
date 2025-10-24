@@ -17,6 +17,7 @@ const Sidebar = () => {
     vendor: false,
     customerVendorDetails: false,
     customerDetails: false,
+    monsterProduct: false,
   });
 
   const toggleSidebar = () => {
@@ -315,17 +316,78 @@ const Sidebar = () => {
           </li>
         )}
 
+        {(role === "admin" || role === "staff") && (
+          <li>
+            <div
+              className="dropdown-toggle"
+              onClick={() => toggleDropdown("monsterProduct")}
+            >
+              <span>🧩</span> Monster Product Ops
+            </div>
+            {dropdowns.monsterProduct && (
+              <ul className="submenu">
+                <li>
+                  {/* <Link className="submenu-item" to="/dashboard/customer-list">
+                    Customer list
+                  </Link> */}
+                  <Link className="submenu-item" to="/admin/bulk-upload">
+                    Bulk Upload
+                  </Link>
+                </li>
+                <li>
+                  <Link className="submenu-item" to="/admin/upload-logs">
+                    Upload Logs
+                  </Link>
+                </li>
+                <li>
+                  <Link className="submenu-item" to="/admin/rollback-tools">
+                    Rollback Tools
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+        )}
+
         {/* Common Items and Reports */}
         <li>
           <Link className="nav-link text-white" to="/Items">
             📦 Items
           </Link>
         </li>
+
         <li>
-          <Link className="nav-link text-white pb-5" to="/Reports">
+          <Link className="nav-link text-white" to="/Reports">
             📈 Reports
           </Link>
         </li>
+        <ul className="nav flex-column">
+          <li className="nav-item">
+            <a className="nav-link text-white" href="/admin/upload">
+              📤 Upload Products
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link text-white" href="/admin/upload-logs">
+              🧾 Upload Logs
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link text-white" href="/admin/rollback">
+              ⏪ Rollback Manager
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link text-white" href="/admin/audit">
+              📋 Audit Trail
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="/admin/flagged">
+              🚩 Flagged Products
+            </a>
+          </li>
+        </ul>
       </ul>
 
       {/* Styles */}

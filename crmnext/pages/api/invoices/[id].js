@@ -1,7 +1,7 @@
 // File: pages/api/invoices/[id].ts
 import dbConnect from "../../../lib/mongodb";
 import Invoice from "../../../models/Invoice/invoiceModel";
-import cors from "../../../lib/cors";
+import cors from "../../../lib/withCors.js";
 
 export default async function handler(req, res) {
   await cors(req, res); // 👈 Must be called first

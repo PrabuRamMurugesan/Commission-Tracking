@@ -1,7 +1,7 @@
 import dbConnect from "../../../lib/mongodb";
 import User from "../../../models/User";
 import bcrypt from "bcryptjs";
-import handleCors from "../../../lib/cors";
+import handleCors from "../../../lib/withCors.js";
 import LoginLog from "../../../models/LoginLog";
 import jwt from "jsonwebtoken";
 

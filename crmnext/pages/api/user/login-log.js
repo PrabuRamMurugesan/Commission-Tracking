@@ -1,6 +1,6 @@
 import dbConnect from "../../../lib/mongodb";
 import LoginLog from "../../../models/LoginLog";
-import handleCors from "../../../lib/cors";
+import handleCors from "../../../lib/withCors.js";
 
 export default async function handler(req, res) {
   await handleCors(req, res);

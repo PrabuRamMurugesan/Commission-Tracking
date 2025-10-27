@@ -4,7 +4,7 @@ import { getEscrowInfo } from "../../../../../controllers/escrowController";
 import { connectDB } from "../../../../../lib/db";
 import { authMiddleware } from "../../../../../middleware/authMiddleware";
 import { roleMiddleware } from "../../../../../middleware/roleMiddleware";
-import handleCors from "../../../../../lib/cors"; // ✅ must be first
+import handleCors from "../../../../../lib/withCors.js"; // ✅ must be first
 
 // 🔧 Base handler logic (business logic only)
 async function baseHandler(req, res) {

@@ -1,31 +1,5 @@
-// import { withCors } from '../../../lib/withCors';
-// import { serviceToken } from '../../../lib/crmSecurity';
-// import { checkAndLock } from '../../../lib/idempotencyService';
-
-// async function handler(req, res) {
-//   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method_not_allowed' });
-
-//   const auth = req.headers.authorization || '';
-//   const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7) : '';
-//   if (token !== serviceToken) return res.status(401).json({ ok: false, error: 'invalid service token' });
-
-//   const key = req.headers['x-idempotency-key'];
-//   const body = req.body || {};
-//   const lock = await checkAndLock('customer-upsert', key, body);
-//   if (!lock.ok && lock.reason === 'duplicate_exact') return res.json({ ok: true, dedup: true });
-//   if (!lock.ok) return res.status(409).json({ ok: false, error: lock.reason });
-
-//   return res.json({ ok: true, received: true });
-// }
-
-// export default withCors(handler);
-
-
-
-// Update on Jun 26, 2024: 
-
-// pages/api/ingest/customer-upsert.js
-// Upserts Customer master data.
+// pages/api/ingest/territory-upsert.js
+// Upserts Territory Head (or Territory) master data.
 
 import crypto from "crypto";
 import mongoose from "mongoose";
@@ -42,27 +16,21 @@ const idemSchema = new mongoose.Schema(
 idemSchema.index({ key: 1, endpoint: 1 }, { unique: true });
 const IdemKey = mongoose.models.IdempotencyKey || mongoose.model("IdempotencyKey", idemSchema);
 
-const customerSchema = new mongoose.Schema(
+const territorySchema = new mongoose.Schema(
   {
-    customerId: { type: String, required: true, unique: true, index: true },
+    territoryId: { type: String, required: true, unique: true, index: true },
     name: String,
-    email: String,
-    phone: String,
-    address: {
-      line1: String,
-      city: String,
-      state: String,
-      country: String,
-      pincode: String,
-    },
+    headUserId: String,     // optional: user id of territory head
+    region: String,
+    contact: { phone: String, email: String },
     active: { type: Boolean, default: true },
     meta: mongoose.Schema.Types.Mixed,
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },
-  { collection: "customers" }
+  { collection: "territories" }
 );
-const Customer = mongoose.models.Customer || mongoose.model("Customer", customerSchema);
+const Territory = mongoose.models.Territory || mongoose.model("Territory", territorySchema);
 
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -95,20 +63,20 @@ export default async function handler(req, res) {
   const auth = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
   if (!SERVICE_TOKEN || auth !== SERVICE_TOKEN) return unauthorized(res);
 
-  const idr = await checkIdempotency(req, "customer-upsert");
+  const idr = await checkIdempotency(req, "territory-upsert");
   if (!idr.ok) return res.status(400).json({ ok: false, error: idr.error });
   if (idr.dedup) return res.status(200).json({ ok: true, dedup: true });
 
-  const { customerId, name, email, phone, address, active, meta, createdAt, updatedAt } = req.body || {};
-  if (!customerId) return res.status(400).json({ ok: false, error: "customerId is required" });
+  const { territoryId, name, headUserId, region, contact, active, meta, createdAt, updatedAt } = req.body || {};
+  if (!territoryId) return res.status(400).json({ ok: false, error: "territoryId is required" });
 
   await connPromise;
 
   const $set = {
     ...(name != null ? { name } : {}),
-    ...(email != null ? { email } : {}),
-    ...(phone != null ? { phone } : {}),
-    ...(address != null ? { address } : {}),
+    ...(headUserId != null ? { headUserId } : {}),
+    ...(region != null ? { region } : {}),
+    ...(contact != null ? { contact } : {}),
     ...(active != null ? { active } : {}),
     ...(meta != null ? { meta } : {}),
     updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
@@ -117,7 +85,7 @@ export default async function handler(req, res) {
     createdAt: createdAt ? new Date(createdAt) : new Date(),
   };
 
-  await Customer.findOneAndUpdate({ customerId }, { $set, $setOnInsert }, { upsert: true, new: true });
+  await Territory.findOneAndUpdate({ territoryId }, { $set, $setOnInsert }, { upsert: true, new: true });
 
   return res.status(200).json({ ok: true, dedup: false });
 }

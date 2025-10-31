@@ -92,140 +92,123 @@
 
 
 // pages/api/ingest/territory-upsert.js
-import crypto from "crypto";
+import withCors from "../../../lib/withCors";
+import { verifyAuth } from "../../../lib/crmSecurity";
+import { checkIdempotency, writeIdempotency } from "../../../lib/idempotencyService";
+import { connectDB } from "../../../lib/db"; // your existing commissioncrm connection
+// 👉 write to BBSlive
+//  import TerritoryHead from "../../../models/bbslive/TerritoryHead";       // ✅ BBSlive model
+// (Optional) lightweight mirror for CRM lists, if you still use them:
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/BBSlive";
-const SERVICE_TOKEN = process.env.SERVICE_TOKEN || "";
 
-let connPromise = global._bbslive_conn || (global._bbslive_conn = mongoose.connect(MONGODB_URI, { autoIndex: true }));
 
-// ----- Idempotency collection -----
-const idemSchema = new mongoose.Schema(
-  { key: String, endpoint: String, bodyHash: String, createdAt: { type: Date, default: Date.now } },
-  { collection: "idempotency_keys" }
-);
-idemSchema.index({ key: 1, endpoint: 1 }, { unique: true });
-const IdemKey = mongoose.models.IdempotencyKey || mongoose.model("IdempotencyKey", idemSchema);
-
-// ----- TerritoryHeads (target = BBSlive.territoryheads) -----
-const thSchema = new mongoose.Schema(
+const MirrorSchema = new mongoose.Schema(
   {
-    territoryId: { type: String, required: true, unique: true, index: true },
-    // core identity
+    territoryId: { type: String, index: true },
     name: String,
     email: String,
     phone: String,
-    whatsappNumber: String,
-    designation: { type: String, default: "Territory" },
-    // business routing/display
+    bpc: String,
+    platform: String,
     zone: String,
-    businessPartnerCode: String, // BPC
-    platform: { type: String, enum: ["BBSCART","Thiaworld","HealthAccess","All"], default: "BBSCART" },
-    stateCode: String,
-    cityCode: String,
-    franchiseeId: mongoose.Schema.Types.ObjectId,
-    // status & dates
-    accountStatus: { type: String, default: "pending" }, // "active"/"pending"/"inactive"
-    joinedDate: Date,     // approved_at
-    // optional UI/analytics
-    totalCustomers: { type: Number, default: 0 },
-    totalTransactions: { type: Number, default: 0 },
-    commissionEarned: { type: Number, default: 0 },
-    commissionPending: { type: Number, default: 0 },
-    commissionRates: [ { platform: String, productCategory: String, rate: Number } ],
-    // everything else to avoid loss
-    extras: mongoose.Schema.Types.Mixed,
-    // audit
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    accountStatus: String,
+    approved_at: Date,
   },
-  { collection: "territoryheads" }
+  { timestamps: true, strict: false, collection: "territories" }
 );
-const TerritoryHead = mongoose.models.TerritoryHead || mongoose.model("TerritoryHead", thSchema);
-
-// --- helpers ---
-function cors(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Idempotency-Key");
+async function TerritoryMirror() {
+  // await connectDB(); // commissioncrm
+ await connectBBSlive();                // ✅ correct for BBSlive writes
+  return mongoose.models.TerritoryMirror || mongoose.model("TerritoryMirror", MirrorSchema);
 }
-function unauthorized(res) { return res.status(401).json({ ok:false, error:"unauthorized" }); }
 
-async function checkIdem(req, endpoint) {
-  const key = req.headers["x-idempotency-key"];
-  if (!key) return { ok:false, error:"missing idempotency key" };
-  const bodyHash = crypto.createHash("sha256").update(JSON.stringify(req.body || {})).digest("hex");
-  await connPromise;
+async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "method_not_allowed" });
+  }
+
+  // 1) Auth + Idempotency
   try {
-    await IdemKey.create({ key, endpoint, bodyHash, createdAt: new Date() });
-    return { ok:true, dedup:false };
-  } catch {
-    return { ok:true, dedup:true };
+    verifyAuth(req); // Authorization: Bearer <SERVICE_TOKEN>
+  } catch (e) {
+    return res.status(401).json({ ok: false, error: "unauthorized", details: e.message });
+  }
+
+  const idemKey = req.headers["x-idempotency-key"];
+  if (!idemKey) return res.status(400).json({ ok: false, error: "idempotency_required" });
+
+  const already = await checkIdempotency(idemKey);
+  if (already) return res.json({ ok: false, dedup: true });
+
+  const b = req.body || {};
+
+  // 2) Basic validation (keep loose—BBSlive is source of truth for full profile)
+  if (!b.territoryId || !b.name || !b.email) {
+    return res.status(400).json({ ok: false, error: "missing_fields", fields: ["territoryId","name","email"] });
+  }
+
+  // Normalize status/approved date fields
+  const core = {
+    territoryId: String(b.territoryId).trim(),
+    name: String(b.name).trim(),
+    email: String(b.email).trim(),
+    phone: b.phone ? String(b.phone).trim() : undefined,
+    whatsappNumber: b.whatsappNumber ? String(b.whatsappNumber).trim() : undefined,
+    bpc: b.bpc ? String(b.bpc).trim() : undefined,
+    platform: b.platform ? String(b.platform).trim() : "BBSCART",
+    zone: b.zone ? String(b.zone).trim() : undefined,
+    stateCode: b.stateCode ? String(b.stateCode).trim() : undefined,
+    cityCode: b.cityCode ? String(b.cityCode).trim() : undefined,
+    accountStatus: b.accountStatus ? String(b.accountStatus).trim() : "active",
+    approved_at: b.approved_at ? new Date(b.approved_at) : undefined,
+  };
+
+  // 3) Upsert into BBSlive.territoryheads (full profile allowed)
+  try {
+    const Territory = await TerritoryHeadModel();
+    const result = await Territory.updateOne(
+      { territoryId: core.territoryId },
+      {
+        $set: { ...core },
+        // Everything else—including your large address, KYC, GST blocks—flows as “profile”
+        $setOnInsert: { createdAt: new Date() },
+        $push: {},
+        $addToSet: {},
+        ...(b.profile ? { $set: { profile: b.profile } } : {}), // optional bundle
+        ...(b.register_business_address
+          ? { $set: { register_business_address: b.register_business_address } }
+          : {}),
+        ...(b.gst_address ? { $set: { gst_address: b.gst_address } } : {}),
+      },
+      { upsert: true }
+    );
+
+    // 4) (Optional) mirror slim row in commissioncrm.territories so your CRM list loads instantly
+    try {
+      const Mirror = await TerritoryMirror();
+      await Mirror.updateOne(
+        { territoryId: core.territoryId },
+        { $set: core },
+        { upsert: true }
+      );
+    } catch (e) {
+      // Non-fatal: lists can also read directly from BBSlive via API if preferred
+      console.warn("[mirror] write skipped:", e.message);
+    }
+
+    // 5) Record idempotency last
+    await writeIdempotency(idemKey, { scope: "territory-upsert", ref: core.territoryId });
+
+    return res.json({
+      ok: true,
+      upserted: !!result.upsertedId || result.modifiedCount || result.matchedCount,
+      territoryId: core.territoryId,
+    });
+  } catch (e) {
+    console.error("territory-upsert error:", e);
+    return res.status(500).json({ ok: false, error: "write_failed", details: e.message });
   }
 }
 
-export default async function handler(req, res) {
-  cors(res);
-  if (req.method === "OPTIONS") return res.status(204).end();
-  if (req.method !== "POST") return res.status(405).json({ ok:false, error:"method not allowed" });
-
-  const auth = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
-  if (!SERVICE_TOKEN || auth !== SERVICE_TOKEN) return unauthorized(res);
-
-  const idem = await checkIdem(req, "territory-upsert");
-  if (!idem.ok) return res.status(400).json({ ok:false, error:idem.error });
-  if (idem.dedup) return res.status(200).json({ ok:true, dedup:true });
-
-  await connPromise;
-
-  const body = req.body || {};
-  const {
-    territoryId,
-    name, email, phone, whatsappNumber,
-    designation, zone, businessPartnerCode, bpc, // allow bpc alias
-    platform, stateCode, cityCode, franchiseeId,
-    status, accountStatus,
-    approved_at, joinedDate,
-    totalCustomers, totalTransactions, commissionEarned, commissionPending,
-    commissionRates,
-    createdAt, updatedAt,
-    ...rest
-  } = body;
-
-  if (!territoryId) return res.status(400).json({ ok:false, error:"territoryId is required" });
-
-  const doc = {
-    territoryId,
-    name: name ?? null,
-    email: email ?? null,
-    phone: phone ?? null,
-    whatsappNumber: whatsappNumber ?? null,
-    designation: designation || "Territory",
-    zone: zone ?? null,
-    businessPartnerCode: businessPartnerCode || bpc || null,
-    platform: platform || "BBSCART",
-    stateCode: stateCode ?? null,
-    cityCode: cityCode ?? null,
-    franchiseeId: franchiseeId ? new mongoose.Types.ObjectId(franchiseeId) : undefined,
-    accountStatus: accountStatus || (status === "active" ? "active" : status === "inactive" ? "inactive" : "pending"),
-    joinedDate: joinedDate ? new Date(joinedDate) : (approved_at ? new Date(approved_at) : new Date()),
-    totalCustomers: Number.isFinite(totalCustomers) ? totalCustomers : 0,
-    totalTransactions: Number.isFinite(totalTransactions) ? totalTransactions : 0,
-    commissionEarned: Number.isFinite(commissionEarned) ? commissionEarned : 0,
-    commissionPending: Number.isFinite(commissionPending) ? commissionPending : 0,
-    commissionRates: Array.isArray(commissionRates) ? commissionRates : [],
-    extras: Object.keys(rest).length ? rest : undefined,
-    updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
-  };
-
-  const setOnInsert = { createdAt: createdAt ? new Date(createdAt) : new Date() };
-
-  await TerritoryHead.updateOne(
-    { territoryId },
-    { $set: doc, $setOnInsert: setOnInsert },
-    { upsert: true }
-  );
-
-  return res.status(200).json({ ok:true, territoryId });
-}
+export default withCors(handler);

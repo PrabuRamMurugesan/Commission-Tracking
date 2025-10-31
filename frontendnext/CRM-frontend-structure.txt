@@ -1,12 +1,10 @@
-Folder PATH listing
-Volume serial number is A497-AB2B
-C:.
+Folder PATH listing for volume New Volume
+Volume serial number is FEA7-343D
+F:.
 ¦   .env
 ¦   .gitignore
 ¦   eslint.config.js
-¦   frontend-structure(CRM).txt
 ¦   frontend-structure.txt
-¦   frontend.txt
 ¦   index.html
 ¦   next.config.js
 ¦   package-lock.json

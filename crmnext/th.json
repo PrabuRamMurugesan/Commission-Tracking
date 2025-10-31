@@ -1,0 +1,28 @@
+﻿{
+  "territoryId": "TH-99903",
+  "name": "Smoke Territory Head",
+  "email": "th-smoke@test.com",
+  "phone": "9000000001",
+  "whatsappNumber": "9000000001",
+  "businessPartnerCode": "XXPuducherryPuducherry1025001",
+  "bpc": "BPC-TH-001",
+  "platform": "BBSCART",
+  "zone": "PY",
+  "stateCode": "Puducherry",
+  "cityCode": "Puducherry",
+  "accountStatus": "active",
+  "designation": "Territory",
+  "joinedDate": "2025-10-31T00:00:00.000Z",
+  "commissionEarned": 0,
+  "commissionPending": 0,
+  "commissionRates": [
+    { "platform": "BBSCART", "productCategory": "Gold", "rate": 5 }
+  ],
+  "totalCustomers": 0,
+  "totalTransactions": 0,
+  "addresses": [
+    { "line1": "No.7, Bharathi St", "city": "Puducherry", "pincode": "605005" }
+  ],
+  "kyc": { "pan": "ABCDE1234F", "aadhaar": "123412341234" },
+  "links": { "franchiseId": "FR-10001", "territoryHeadId": "TH-10001" }
+}

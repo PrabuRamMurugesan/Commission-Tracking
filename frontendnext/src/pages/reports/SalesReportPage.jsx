@@ -51,7 +51,7 @@ const SalesReportPage = () => {
 
       setSalesData(res.data.transactions);
       console.log(res.data.transactions, "🟢res.data.transactions");
-      
+
       setSummary(res.data.summary || {});
     } catch (err) {
       console.error("❌ Sales API Error:", err); // <-- ADD THIS TOO
@@ -60,7 +60,6 @@ const SalesReportPage = () => {
       setLoading(false);
     }
   };
-  
 
   const handleExport = async () => {
     try {
@@ -83,7 +82,7 @@ const SalesReportPage = () => {
   }, []);
 
   return (
-    <div className="container mt-4">
+    <div className="container-fluid vw-100 vh-100 border p-5 d-flex flex-column mt-5">
       <h2 className="mb-4">Sales Report</h2>
 
       <Row className="mb-3">

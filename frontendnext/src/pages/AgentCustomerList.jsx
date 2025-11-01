@@ -23,53 +23,57 @@ const AgentCustomerList = () => {
   }, []);
 
   return (
-    <div className="container py-4">
-      <h2 className="h3 mb-4 text-primary">Choose Agent for Customers List</h2>
+    <div className="d-flex vw-100 vh-100 my-5">
+      <div className="container py-5 d-flex flex-column  ">
+        <h2 className="h3 mb-4 text-primary">
+          Choose Agent for Customers List
+        </h2>
 
-      <div className="table-responsive border rounded shadow-sm">
-        <table className="table table-bordered table-hover table-sm mb-0">
-          <thead className="table-dark">
-            <tr>
-              <th>#</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Zone</th>
-              <th>Total Customers</th>
-              <th>Total Transactions</th>
-              <th>Commission Earned</th>
-              <th>Commission Pending</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {agents.map((agent, index) => (
-              <tr key={agent._id}>
-                <td>{index + 1}</td>
-                <td>{agent.name}</td>
-                <td>{agent.email}</td>
-                <td>{agent.phone || "-"}</td>
-                <td>{agent.zone || "-"}</td>
-                <td>{agent.totalCustomers || 0}</td>
-                <td>{agent.totalTransactions || 0}</td>
-                <td>₹ {agent.commissionEarned?.toLocaleString() || 0}</td>
-                <td>₹ {agent.commissionPending?.toLocaleString() || 0}</td>
-                <td>
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() =>
-                      navigate(
-                        `/dashboard/customer-list?role=agent&userId=${agent._id}`
-                      )
-                    }
-                  >
-                    View Customers
-                  </button>
-                </td>
+        <div className="table-responsive border rounded shadow-sm">
+          <table className="table table-bordered table-hover table-sm mb-0">
+            <thead className="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Zone</th>
+                <th>Total Customers</th>
+                <th>Total Transactions</th>
+                <th>Commission Earned</th>
+                <th>Commission Pending</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {agents.map((agent, index) => (
+                <tr key={agent._id}>
+                  <td>{index + 1}</td>
+                  <td>{agent.name}</td>
+                  <td>{agent.email}</td>
+                  <td>{agent.phone || "-"}</td>
+                  <td>{agent.zone || "-"}</td>
+                  <td>{agent.totalCustomers || 0}</td>
+                  <td>{agent.totalTransactions || 0}</td>
+                  <td>₹ {agent.commissionEarned?.toLocaleString() || 0}</td>
+                  <td>₹ {agent.commissionPending?.toLocaleString() || 0}</td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() =>
+                        navigate(
+                          `/dashboard/customer-list?role=agent&userId=${agent._id}`
+                        )
+                      }
+                    >
+                      View Customers
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -49,8 +49,8 @@ const VendorList = () => {
   };
 
   return (
-    <div className="container-fluid mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+    <div className="container-fluid me-5 d-flex flex-column vw-100 p-5 border rounded shadow-sm">
+      <div className="d-flex justify-content-between align-items-center  gap-2 mb-md-4  ">
         <h3>Vendor List</h3>
         <div>
           <button

@@ -18,36 +18,38 @@ const AuditTrailPage = () => {
   }, []);
 
   return (
-    <div className="container mt-4">
-      <h3>Audit Trail</h3>
-      {logs.length === 0 ? (
-        <p>No audit logs found.</p>
-      ) : (
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Action</th>
-              <th>Target</th>
-              <th>Old</th>
-              <th>New</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((log, i) => (
-              <tr key={i}>
-                <td>{log.user || "N/A"}</td>
-                <td>{log.action || "N/A"}</td>
-                <td>{log.description || "N/A"}</td>
-                <td>{log.previousValue || "-"}</td>
-                <td>{log.newValue || "-"}</td>
-                <td>{new Date(log.createdAt).toLocaleString()}</td>
+    <div className="d-flex align-item-center justify-content-center vw-100 vh-100 my-5 p-5">
+      <div className="container mt-4">
+        <h3>Audit Trail</h3>
+        {logs.length === 0 ? (
+          <p>No audit logs found.</p>
+        ) : (
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Action</th>
+                <th>Target</th>
+                <th>Old</th>
+                <th>New</th>
+                <th>Time</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {logs.map((log, i) => (
+                <tr key={i}>
+                  <td>{log.user || "N/A"}</td>
+                  <td>{log.action || "N/A"}</td>
+                  <td>{log.description || "N/A"}</td>
+                  <td>{log.previousValue || "-"}</td>
+                  <td>{log.newValue || "-"}</td>
+                  <td>{new Date(log.createdAt).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };

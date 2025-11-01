@@ -51,25 +51,27 @@ const AdminUploadForm = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h4>🔄 Admin Bulk Product Upload</h4>
-      <input
-        className="form-control my-2"
-        placeholder="Grid Code (Optional)"
-        value={gridCode}
-        onChange={(e) => setGridCode(e.target.value)}
-      />
-      <input
-        className="form-control my-2"
-        type="file"
-        accept=".csv"
-        onChange={handleFileChange}
-      />
-      <button className="btn btn-primary mt-2" onClick={handleUpload}>
-        Upload CSV
-      </button>
+    <div className="d-flex flex-column justify-start align-items-center mt-5  vw-100 vh-100">
+      <div className="container mt-4 d-flex flex-column align-items-center gap-3 border p-5 rounded">
+        <h4>🔄 Admin Bulk Product Upload</h4>
+        <input
+          className="form-control my-2"
+          placeholder="Grid Code (Optional)"
+          value={gridCode}
+          onChange={(e) => setGridCode(e.target.value)}
+        />
+        <input
+          className="form-control my-2"
+          type="file"
+          accept=".csv"
+          onChange={handleFileChange}
+        />
+        <button className="btn btn-primary mt-2" onClick={handleUpload}>
+          Upload CSV
+        </button>
 
-      <ToastAlert {...toast} onClose={() => setToast({ show: false })} />
+        <ToastAlert {...toast} onClose={() => setToast({ show: false })} />
+      </div>
     </div>
   );
 };

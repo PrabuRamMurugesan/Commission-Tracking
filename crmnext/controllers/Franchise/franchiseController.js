@@ -1,22 +1,31 @@
 import Francise from "../../models/Franchise/Francise.js";
 import bcrypt from "bcryptjs";
-import { connectDB } from "../../lib/db.js";
+import { getBBSLiveDb } from "../../lib/db.js";
 import { validateFrancisePayload } from "../../utils/validateFranchise.js";
 import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js";
 
 // ✅ GET All Francises (optionally by franchiseeId or platform)
 export const getAllFranchises = async (req, res) => {
   try {
-    await connectDB();
-
+    const db = await getBBSLiveDb();
+    const col = db.collection("franchiseheads");
     const { franchiseeId, platform } = req.query;
     const filter = {};
 
     if (franchiseeId) filter.franchiseeId = franchiseeId;
     if (platform) filter.platform = platform;
 
-    const francise = await Francise.find(filter).sort({ createdAt: -1 });
-
+    const francise = await col
+      .find(filter, {
+        projection: {
+          name: 1, email: 1, phone: 1, platform: 1, zone: 1, status: 1,
+          bpc: 1, totalCustomers: 1, totalTransactions: 1,
+          commissionEarned: 1, commissionPending: 1, joinedDate: 1,
+        },
+      })
+      .sort({ joinedDate: -1 })
+      .limit(500)
+      .toArray();
     res.status(200).json({ francise });
   } catch (error) {
     console.error("Error fetching francise:", error);
@@ -61,7 +70,7 @@ export const createFranchise = async (req, res) => {
       stateCode,
       cityCode,
     } = req.body;
- // ✅ Generate BPC properly here
+    // ✅ Generate BPC properly here
     const count = await Francise.countDocuments({ stateCode, cityCode });
 
     const bpc = generateLocationPartnerCode({

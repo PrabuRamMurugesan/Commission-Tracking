@@ -1,4 +1,4 @@
-// crmnext/pages/api/vendor/index.js
+// crmnext/pages/api/franchise/index.js
 
 import {
   getAllFranchises,

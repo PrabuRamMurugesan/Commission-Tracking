@@ -57,19 +57,22 @@ export default async function handler(req, res) {
   }
 
   // Sanity GET (mirror of territory GET you used)
-  if (req.method === "GET") {
-    try {
-      const db = await getDb();
-      const col = db.collection(COLLECTION);
-      const items = await col
-        .find({}, { projection: { _id: 1 } })
-        .limit(5)
-        .toArray();
-      return res.status(200).json({ ok: true, count: items.length, items });
-    } catch (e) {
-      console.error("[franchise-upsert][GET] error:", e);
-      return res.status(500).json({ ok: false, error: "internal_error" });
-    }
+  // if (req.method === "GET") {
+  //   try {
+  //     const db = await getDb();
+  //     const col = db.collection(COLLECTION);
+  //     const items = await col
+  //       .find({}, { projection: { _id: 1 } })
+  //       .limit(5)
+  //       .toArray();
+  //     return res.status(200).json({ ok: true, count: items.length, items });
+  //   } catch (e) {
+  //     console.error("[franchise-upsert][GET] error:", e);
+  //     return res.status(500).json({ ok: false, error: "internal_error" });
+  //   }
+  // }
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
   }
 
   if (req.method !== "POST") {
@@ -112,7 +115,7 @@ export default async function handler(req, res) {
     if (idempotencyKey) {
       try {
         await idempCol.createIndex({ key: 1, endpoint: 1 }, { unique: true });
-      } catch {}
+      } catch { }
       try {
         await idempCol.insertOne({
           key: idempotencyKey,
@@ -185,9 +188,11 @@ export default async function handler(req, res) {
     // Ensure unique index on franchiseId
     try {
       await col.createIndex({ franchiseId: 1 }, { unique: true });
-    } catch {}
+    } catch { }
 
     // Upsert
+    console.log("[DEBUG] Payload received for franchise-upsert:", Object.keys(payload));
+
     const result = await col.updateOne(
       { franchiseId },
       updateDoc,

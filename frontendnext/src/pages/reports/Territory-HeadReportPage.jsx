@@ -10,6 +10,15 @@ const TerritoryHeadReportPage = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+ const safeDate = (d) => {
+  if (!d) return "-";
+  const dt = new Date(d);
+  return isNaN(dt.getTime()) ? "-" : dt.toLocaleString();
+};
+
+
+
+
   useEffect(() => {
     fetchTerritories();
   }, []);
@@ -114,7 +123,8 @@ const TerritoryHeadReportPage = () => {
               {territories.length > 0 ? (
                 territories.map((t) => (
                   <tr key={t._id}>
-                    <td>{new Date(t.createdAt).toLocaleString()}</td>
+                    {/* <td>{new Date(t.createdAt).toLocaleString()}</td> */}
+                    <td>{safeDate(t.createdAt)}</td>
                     <td>{t._id}</td>
                     <td>{t.name}</td>
                     <td>{t.email}</td>

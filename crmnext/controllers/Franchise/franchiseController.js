@@ -1,13 +1,13 @@
 import Francise from "../../models/Franchise/Francise.js";
 import bcrypt from "bcryptjs";
-import { getBBSLiveDb } from "../../lib/db.js";
+import { getBBSliveDb } from "../../lib/db.js";
 import { validateFrancisePayload } from "../../utils/validateFranchise.js";
 import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js";
 
 // ✅ GET All Francises (optionally by franchiseeId or platform)
 export const getAllFranchises = async (req, res) => {
   try {
-    const db = await getBBSLiveDb();
+    const db = await getBBSliveDb();
     const col = db.collection("franchiseheads");
     const { franchiseeId, platform } = req.query;
     const filter = {};

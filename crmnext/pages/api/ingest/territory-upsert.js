@@ -462,51 +462,111 @@ async function handler(req, res) {
 
       const now = new Date();
 
+      // const doc = {
+      //   territoryId: body.territoryId,
+
+      //   // Identity / profile
+      //   name: body.name,
+      //   email: body.email,
+      //   phone: body.phone,
+      //   whatsappNumber: body.whatsappNumber,
+      //   designation: body.designation,
+      //   profilePic: body.profilePic,
+
+      //   // Org / geo
+      //   platform: body.platform,
+      //   zone: body.zone,
+      //   stateCode: body.stateCode,
+      //   cityCode: body.cityCode,
+
+      //   // Codes
+      //   businessPartnerCode: body.businessPartnerCode,
+      //   bpc: body.bpc,
+
+      //   // Status
+      //   status: body.status || undefined,
+      //   accountStatus: body.accountStatus || undefined,
+      //   active: body.active ?? true,
+
+      //   // Commissions / tallies
+      //   commissionRates: body.commissionRates,
+      //   commissionEarned: body.commissionEarned ?? 0,
+      //   commissionPending: body.commissionPending ?? 0,
+      //   totalCustomers: body.totalCustomers ?? 0,
+      //   totalTransactions: body.totalTransactions ?? 0,
+
+      //   // KYC / address
+      //   kyc: body.kyc,
+      //   addresses: body.addresses,
+
+      //   // Links / hierarchy
+      //   links: body.links,
+      //   franchiseeId: body.franchiseeId,
+
+      //   // Dates
+      //   joinedDate: body.joinedDate ? new Date(body.joinedDate) : undefined,
+      //   updatedAt: now,
+      // };
+
+
+      // - 161–205  (DELETE the whole existing const doc = { ... } block)
+  
       const doc = {
-        territoryId: body.territoryId,
+    // First, keep ALL incoming keys from BBSCART/clients
+    ...body,
+   // Ensure required id stays correct (do not rely on spread order)
+   territoryId: body.territoryId,
 
-        // Identity / profile
-        name: body.name,
-        email: body.email,
-        phone: body.phone,
-        whatsappNumber: body.whatsappNumber,
-        designation: body.designation,
-        profilePic: body.profilePic,
+    // Identity / profile (explicitly kept; spread above already included them)
+    name: body.name,
+    email: body.email,
+    phone: body.phone,
+   whatsappNumber: body.whatsappNumber,
+   designation: body.designation,
+   profilePic: body.profilePic,
 
-        // Org / geo
-        platform: body.platform,
-        zone: body.zone,
-        stateCode: body.stateCode,
-        cityCode: body.cityCode,
+   // Org / geo
+    platform: body.platform,
+    zone: body.zone,
+    stateCode: body.stateCode,
+   cityCode: body.cityCode,
 
-        // Codes
-        businessPartnerCode: body.businessPartnerCode,
-        bpc: body.bpc,
+   // Codes    businessPartnerCode: body.businessPartnerCode,
+   bpc: body.bpc,
 
-        // Status
-        status: body.status || undefined,
-        accountStatus: body.accountStatus || undefined,
-        active: body.active ?? true,
+   // Status
+   status: body.status || undefined,
+    accountStatus: body.accountStatus || undefined,
+    active: body.active ?? true,
 
-        // Commissions / tallies
-        commissionRates: body.commissionRates,
-        commissionEarned: body.commissionEarned ?? 0,
-        commissionPending: body.commissionPending ?? 0,
-        totalCustomers: body.totalCustomers ?? 0,
-        totalTransactions: body.totalTransactions ?? 0,
+    // Commissions / tallies
+    commissionRates: body.commissionRates,
+   commissionEarned: body.commissionEarned ?? 0,
+    commissionPending: body.commissionPending ?? 0,
+    totalCustomers: body.totalCustomers ?? 0,
+    totalTransactions: body.totalTransactions ?? 0,
 
-        // KYC / address
-        kyc: body.kyc,
-        addresses: body.addresses,
+    // KYC / address
+    kyc: body.kyc,
+    addresses: body.addresses,
 
-        // Links / hierarchy
-        links: body.links,
-        franchiseeId: body.franchiseeId,
+    // Links / hierarchy (fallback to empty object when absent)
+   links: body.links || {},
+    franchiseeId: body.franchiseeId,
 
-        // Dates
-        joinedDate: body.joinedDate ? new Date(body.joinedDate) : undefined,
-        updatedAt: now,
-      };
+    // Dates — normalize joinedDate with safe fallbacks
+    joinedDate: body.joinedDate
+      ? new Date(body.joinedDate)
+      : (body.createdAt
+          ? new Date(body.createdAt)
+        : (body.submitted_at ? new Date(body.submitted_at) : undefined)),
+
+    // Always refresh updatedAt on write
+    updatedAt: now,
+  };
+
+
+
 
       if (!body.createdAt) {
         doc.createdAt = now;

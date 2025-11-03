@@ -1,13 +1,13 @@
 import Vendor from "../../models/Vendor/Vendor.js";
 import bcrypt from "bcryptjs";
-import { getBBSLiveDb } from "../../lib/db.js";
+import { getBBSliveDb } from "../../lib/db.js";
 import { validateVendorPayload } from "../../utils/validateVendor.js";
 import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js";
 
 // ✅ GET All vendor (optionally by franchiseeId or platform)
 export const getAllVendor = async (req, res) => {
   try {
-    await getBBSLiveDb();
+    await getBBSliveDb();
 
     const { franchiseeId, platform } = req.query;
     const filter = {};
@@ -27,7 +27,7 @@ export const getAllVendor = async (req, res) => {
 // ✅ GET Single Vendor by ID
 export const getVendorById = async (req, res) => {
   try {
-    await getBBSLiveDb();
+    await getBBSliveDb();
     const { id } = req.query;
 
     const vendor = await Vendor.findById(id);

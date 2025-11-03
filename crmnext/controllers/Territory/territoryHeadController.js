@@ -174,7 +174,7 @@
 //  - create/update/delete return the same message fields you used.
 
 import bcrypt from "bcryptjs";
-import { getBBSLiveDb } from "../../lib/db.js";
+import { getBBSliveDb } from "../../lib/db.js";
 import { validateTerritoryPayload } from "../../utils/validateTerritoryHead.js";
 import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js";
 
@@ -183,7 +183,7 @@ const COLLECTION = "territoryheads";
 // ✅ GET All territory (optionally by franchiseeId or platform)
 export const getAllTerritory = async (req, res) => {
   try {
-    const db = await getBBSLiveDb();
+    const db = await getBBSliveDb();
     const col = db.collection(COLLECTION);
 
     const { franchiseeId, platform } = req.query;
@@ -207,7 +207,7 @@ export const getAllTerritory = async (req, res) => {
 // ✅ GET Single Territory by ID (Mongo _id string)
 export const getTerritoryById = async (req, res) => {
   try {
-    const db = await getBBSLiveDb();
+    const db = await getBBSliveDb();
     const col = db.collection(COLLECTION);
     const { id } = req.query;
 
@@ -238,7 +238,7 @@ export const getTerritoryById = async (req, res) => {
 // ✅ POST Create New Territory — writes to BBSlive.territoryheads
 export const createTerritory = async (req, res) => {
   try {
-    const db = await getBBSLiveDb();
+    const db = await getBBSliveDb();
     const col = db.collection(COLLECTION);
 
     const {
@@ -326,7 +326,7 @@ export const createTerritory = async (req, res) => {
 // ✅ PUT Update Territory Info
 export const updateTerritory = async (req, res) => {
   try {
-    const db = await getBBSLiveDb();
+    const db = await getBBSliveDb();
     const col = db.collection(COLLECTION);
     const { id } = req.query;
 
@@ -356,7 +356,7 @@ export const updateTerritory = async (req, res) => {
 // ✅ DELETE (soft-deactivate)
 export const deleteTerritory = async (req, res) => {
   try {
-    const db = await getBBSLiveDb();
+    const db = await getBBSliveDb();
     const col = db.collection(COLLECTION);
     const { id } = req.query;
 

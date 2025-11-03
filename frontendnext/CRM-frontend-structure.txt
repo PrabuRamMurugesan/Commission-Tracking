@@ -3,6 +3,7 @@ Volume serial number is FEA7-343D
 F:.
 ¦   .env
 ¦   .gitignore
+¦   CRM-frontend-structure.txt
 ¦   eslint.config.js
 ¦   frontend-structure.txt
 ¦   index.html

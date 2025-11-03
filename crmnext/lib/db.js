@@ -38,7 +38,7 @@ if (!global._bbsliveClientPromise) {             // (+13)
 }
 clientPromise = global._bbsliveClientPromise;
 
-export async function getBBSLiveDb() {           // (+19)
+export async function getBBSliveDb() {           // (+19)
   const c = await clientPromise;
   return c.db("BBSlive");
 }

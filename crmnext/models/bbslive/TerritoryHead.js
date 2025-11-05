@@ -1,5 +1,5 @@
 // models/bbslive/TerritoryHead.js
-import { connectBBSlive } from "../../lib/bbsliveDb.js";
+import { getBBSliveDb } from "../../lib/bbsliveDb.js";
 import mongoose from "mongoose";
 
 const TerritoryHeadSchema = new mongoose.Schema(
@@ -29,7 +29,7 @@ const TerritoryHeadSchema = new mongoose.Schema(
 );
 
 export async function TerritoryHeadModel() {
-  const conn = await connectBBSlive();
+  const conn = await getBBSliveDb();
   // Important: prevent OverwriteModelError for HMR
   return conn.models.TerritoryHead || conn.model("TerritoryHead", TerritoryHeadSchema);
 }

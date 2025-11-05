@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 let cached = global._bbslive_mongoose || { conn: null, promise: null };
 
-export async function connectBBSlive() {
+export async function getBBSliveDb() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {

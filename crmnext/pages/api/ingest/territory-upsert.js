@@ -123,12 +123,9 @@
 // );
 // async function TerritoryMirror() {
 //   // await connectDB(); // commissioncrm
-//  await connectBBSlive();                // ✅ correct for BBSlive writes
+//  await getBBSliveDb();                // ✅ correct for BBSlive writes
 //   return mongoose.models.TerritoryMirror || mongoose.model("TerritoryMirror", MirrorSchema);
 // }
-
-
-
 
 // async function handler(req, res) {
 

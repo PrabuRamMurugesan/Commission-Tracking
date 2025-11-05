@@ -253,8 +253,8 @@
 
 
 // pages/api/dashboard/territories.js
-import { connectBBSlive } from "../../../bbsliveDb.js";
-import { getBBSLiveDb } from "../../../lib/db";
+// import { getBBSliveDb } from "../../../bbsliveDb.js";
+import { getBBSliveDb,} from "../../../lib/db";
 
 // helpers
 const coalesce = (...vals) => {
@@ -306,9 +306,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const conn = await connectBBSlive();
-    const db = conn.getClient().db();
-
+    // const conn = await getBBSliveDb();
+    // const db = conn.getCollection().db();
+  // getBBSliveDb() in your lib/db.js returns either:
+ //   A) a DB instance, or
+ //   B) a client where you must call .db()
+ const conn = await getBBSliveDb();
+  const db = typeof conn.db === "function" ? conn.db() : conn;
+  
     const {
       partnerRole,
       partnerId,

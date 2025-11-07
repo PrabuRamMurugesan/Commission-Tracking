@@ -1,58 +1,51 @@
-// src/components/TerritoryFilterBar.jsx
 import React, { useState } from "react";
 
-const TerritoryFilterBar = ({ territory, setFilteredTerritory }) => {
+const DeliveryFilterBar = ({ deliveries = [], setFilteredDeliveries }) => {
   const [search, setSearch] = useState("");
   const [platform, setPlatform] = useState("");
   const [status, setStatus] = useState("");
   const [zone, setZone] = useState("");
 
-  const uniquePlatforms = [...new Set(territory.map((a) => a.platform))];
-  const uniqueZones = [
-    ...new Set(territory.map((a) => a.zone).filter(Boolean)),
-  ];
+  // ✅ Safely handle empty array
+  const uniquePlatforms = [...new Set(deliveries.map((d) => d.platform).filter(Boolean))];
+  const uniqueZones = [...new Set(deliveries.map((d) => d.zone).filter(Boolean))];
 
   const handleFilter = () => {
-    let filtered = [...territory];
+    let filtered = [...deliveries];
 
     if (search) {
       filtered = filtered.filter(
-        (territory) =>
-          territory.name.toLowerCase().includes(search.toLowerCase()) ||
-          territory.email.toLowerCase().includes(search.toLowerCase()) ||
-          territory.phone.includes(search)
+        (item) =>
+          item.name?.toLowerCase().includes(search.toLowerCase()) ||
+          item.email?.toLowerCase().includes(search.toLowerCase()) ||
+          item.phone?.includes(search)
       );
     }
 
     if (platform) {
-      filtered = filtered.filter(
-        (territory) => territory.platform === platform
-      );
+      filtered = filtered.filter((item) => item.platform === platform);
     }
 
     if (status) {
-      filtered = filtered.filter(
-        (territory) => territory.accountStatus === status
-      );
+      filtered = filtered.filter((item) => item.accountStatus === status);
     }
 
     if (zone) {
-      filtered = filtered.filter((territory) => territory.zone === zone);
+      filtered = filtered.filter((item) => item.zone === zone);
     }
 
-    setFilteredTerritory(filtered);
+    setFilteredDeliveries(filtered);
   };
 
   return (
-    <div className="border rounded-3  mb-4 bg-white shadow-sm p-4">
-      <div className="d-flex flex-row align-items-center justify-content-between gap-3 ">
+    <div className="border rounded-3 mb-4 bg-white shadow-sm p-4">
+      <div className="d-flex flex-row align-items-center justify-content-between gap-3 flex-wrap">
         <div className="col-md-3 mb-2">
           <input
             type="text"
             className="form-control border-start-2"
             placeholder="Search name | email | phone"
             style={{ borderRadius: "10px", width: "250px" }}
-            border-start-2
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -102,9 +95,9 @@ const TerritoryFilterBar = ({ territory, setFilteredTerritory }) => {
         </div>
       </div>
 
-      <div className="col-md-5 mb-2  d-flex flex-row align-items-center justify-content-center w-100 mt-3 ">
+      <div className="col-md-5 mb-2 d-flex flex-row align-items-center justify-content-center w-100 mt-3">
         <button
-          className="btn btn-secondary w-100 border-start-0 "
+          className="btn btn-secondary w-100 border-start-0"
           onClick={handleFilter}
         >
           Apply Filters
@@ -114,4 +107,4 @@ const TerritoryFilterBar = ({ territory, setFilteredTerritory }) => {
   );
 };
 
-export default TerritoryFilterBar;
+export default DeliveryFilterBar;

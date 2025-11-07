@@ -1,9 +1,9 @@
-// src/components/AddAgentModal.jsx
+// src/components/AddHealthcareModal.jsx
 import React, { useState } from "react";
 import axios from "axios";
-import { IoEyeOutline } from "react-icons/io5";
-import { IoEyeOffSharp } from "react-icons/io5";
-const AddAgentModal = ({ show, onClose, onSuccess }) => {
+import { IoEyeOutline, IoEyeOffSharp } from "react-icons/io5";
+
+const AddHealthcareModal = ({ show, onClose, onSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -11,16 +11,14 @@ const AddAgentModal = ({ show, onClose, onSuccess }) => {
     phone: "",
     whatsappNumber: "",
     password: "",
-    platform: "BBSCART",
-    franchiseeId: "",
-    commissionRates: [
-      { platform: "BBSCART", productCategory: "Gold", rate: 5 },
-    ],
+    platform: "BBSCARE", // renamed from BBSCART
+    healthcareId: "",
+    specialization: "",
     zone: "",
-    stateCode: "", // ✅ Add this
-    cityCode: "", // ✅ Add this
-    pan: "",
-    gstNumber: "",
+    stateCode: "",
+    cityCode: "",
+    qualification: "",
+    experience: "",
   });
 
   const handleChange = (e) => {
@@ -30,13 +28,14 @@ const AddAgentModal = ({ show, onClose, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/api/agents", formData);
+      const res = await axios.post("/api/healthcare", formData);
       if (res.status === 201) {
-        onSuccess();
+        onSuccess?.();
+        onClose();
       }
     } catch (err) {
-      console.error("Error creating agent:", err);
-      alert("Failed to create agent");
+      console.error("Error creating healthcare record:", err);
+      alert("Failed to add healthcare provider");
     }
   };
 
@@ -44,7 +43,7 @@ const AddAgentModal = ({ show, onClose, onSuccess }) => {
 
   return (
     <div
-      className="modal show fade d-block d-flex justify-content-center align-items-center  "
+      className="modal fade show d-flex justify-content-center align-items-center"
       style={{
         backgroundColor: "rgba(0, 0, 0, 0.7)",
         position: "fixed",
@@ -59,104 +58,118 @@ const AddAgentModal = ({ show, onClose, onSuccess }) => {
     >
       <div
         className="modal-dialog modal-lg"
-        style={{ maxWidth: "900px", width: "90%" }}
+        style={{
+          maxWidth: "900px",
+          width: "90%",
+        }}
       >
         <div className="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
           {/* Header */}
           <div className="modal-header bg-dark text-white">
-            <h5 className="modal-title fw-semibold">Add New Agent</h5>
+            <h5 className="modal-title fw-semibold p-2">
+              Add New Healthcare Provider
+            </h5>
             <button
               type="button"
-              className="btn-close  btn-close-white"
+              className="btn-close btn-close-white"
               onClick={onClose}
             ></button>
           </div>
+
+          {/* Form */}
           <form onSubmit={handleSubmit}>
             <div className="modal-body p-4">
               <div className="row g-3">
+                {/* Name + Email */}
                 <div className="col-md-6">
-                  <label htmlFor="name">Name : </label>
+                  <label className="form-label fw-semibold">Name</label>
                   <input
                     type="text"
                     name="name"
-                    placeholder="Name"
+                    placeholder="Full Name"
                     className="form-control"
                     required
                     onChange={handleChange}
                   />
                 </div>
                 <div className="col-md-6">
-                  <label htmlFor="email">E-mail : </label>
+                  <label className="form-label fw-semibold">Email</label>
                   <input
                     type="email"
                     name="email"
-                    placeholder="Email"
-                    className="form-control mb-2"
-                    required
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="phone">Contact : </label>
-                  <input
-                    type="text"
-                    name="phone"
-                    placeholder="Phone"
-                    className="form-control mb-2"
-                    required
-                    onChange={handleChange}
-                  />{" "}
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="whatsapp"></label>
-                  <input
-                    type="text"
-                    name="whatsappNumber"
-                    placeholder="WhatsApp Number"
-                    className="form-control mb-2"
-                    onChange={handleChange}
-                  />
-                </div>
-                {/* PAN */}
-                <div className="col-md-6">
-                  <label className="form-label">PAN</label>
-                  <input
-                    type="text"
-                    name="pan"
-                    placeholder="PAN Number"
+                    placeholder="Email Address"
                     className="form-control"
                     required
                     onChange={handleChange}
                   />
                 </div>
 
-                {/* GST */}
+                {/* Contact + WhatsApp */}
                 <div className="col-md-6">
-                  <label className="form-label">GSTIN</label>
+                  <label className="form-label fw-semibold">Contact</label>
                   <input
                     type="text"
-                    name="gstNumber"
-                    placeholder="GST Number"
+                    name="phone"
+                    placeholder="Phone Number"
+                    className="form-control"
+                    required
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold">WhatsApp</label>
+                  <input
+                    type="text"
+                    name="whatsappNumber"
+                    placeholder="WhatsApp Number"
                     className="form-control"
                     onChange={handleChange}
                   />
                 </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">PAN</label>
+                  <input
+                    type="text"
+                    name="pan"
+                    placeholder="PAN"
+                    className="form-control"
+                    required
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label ">GSTIN</label>
+                  <input
+                    type="text"
+                    name="gst numbe"
+                    placeholder="gst number"
+                    className="form-control"
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Password */}
                 <div className="col-md-6 position-relative">
-                  <label className="form-label" htmlFor="password">
-                    Password :
-                  </label>
+                  <label className="form-label fw-semibold">Password</label>
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    placeholder="Password"
-                    className="form-control mb-2"
+                    placeholder="Set Password"
+                    className="form-control"
                     required
                     onChange={handleChange}
                   />
                   <button
                     type="button"
-                    className="btn  translate-middle-y me-2 border-0 bg-transparent text-secondary"
-                    style={{ position: "absolute", top: "60%", right: "0px" }}
+                    className="btn  translate-middle-y me-2
+                     text-secondary"
+                    style={{
+                      background: "transparent",
+                      position: "absolute",
+                      top: "70%",
+                      right: "0px",
+                    }}
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
@@ -167,41 +180,47 @@ const AddAgentModal = ({ show, onClose, onSuccess }) => {
                     )}
                   </button>
                 </div>
+
+                {/* Platform */}
                 <div className="col-md-6">
-                  <label htmlFor="platform">Platform : </label>
+                  <label className="form-label fw-semibold">Platform</label>
                   <select
                     name="platform"
                     className="form-select"
                     onChange={handleChange}
-                    defaultValue="BBSCART"
+                    defaultValue="BBSCARE"
                   >
-                    <option value="BBSCART">BBSCART</option>
-                    <option value="Golldex">Golldex</option>
-                    <option value="Thiaworld">Thiaworld</option>
+                    <option value="BBSCARE">BBSCARE</option>
+                    <option value="MediDex">MediDex</option>
+                    <option value="ThiaHealth">ThiaHealth</option>
                   </select>
                 </div>
+
+                {/* Provider ID + Specialization */}
                 <div className="col-md-6">
-                  <label htmlFor="franchiseeId">Admin ID : </label>
+                  <label className="form-label fw-semibold">Provider ID</label>
                   <input
                     type="text"
-                    name="franchiseeId"
-                    placeholder="Franchisee ID"
-                    className="form-control mb-2"
+                    name="healthcareId"
+                    placeholder="Unique Provider ID"
+                    className="form-control"
                     required
                     onChange={handleChange}
                   />
                 </div>
                 <div className="col-md-6">
-                  <label htmlFor="">State :</label>
+                  <label className="form-label fw-semibold">
+                    Specialization
+                  </label>
                   <input
                     type="text"
-                    name="stateCode"
-                    placeholder="State Code (e.g. TN)"
-                    className="form-control mb-2"
-                    required
+                    name="specialization"
+                    placeholder="e.g. General Medicine, Pediatrics"
+                    className="form-control"
                     onChange={handleChange}
-                  />{" "}
+                  />
                 </div>
+
                 <div className="col-md-6">
                   <label className="form-label fw-semibold">District</label>
                   <input
@@ -213,29 +232,54 @@ const AddAgentModal = ({ show, onClose, onSuccess }) => {
                   />
                 </div>
                 <div className="col-md-6">
-                  <label htmlFor="">City</label>
+                  <label className="form-label fw-semibold">Admin ID</label>
                   <input
                     type="text"
-                    name="cityCode"
-                    placeholder="City Code (e.g. CHN)"
-                    className="form-control mb-2"
+                    name="experience"
+                    placeholder="Years of Experience"
+                    className="form-control"
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* State + City + Zone */}
+                <div className="col-md-4">
+                  <label className="form-label fw-semibold">State</label>
+                  <input
+                    type="text"
+                    name="stateCode"
+                    placeholder="State Code (e.g. TN)"
+                    className="form-control"
                     required
                     onChange={handleChange}
                   />
                 </div>
-                <div className="col-md-6">
-                  <label htmlFor="zone">Pincode</label>
+                <div className="col-md-4">
+                  <label className="form-label fw-semibold">City</label>
                   <input
                     type="text"
-                    name="pincode"
-                    placeholder="Pincode"
-                    className="form-control mb-2"
+                    name="cityCode"
+                    placeholder="City Code (e.g. CHN)"
+                    className="form-control"
+                    required
                     onChange={handleChange}
-                  />{" "}
+                  />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label fw-semibold">Pincode</label>
+                  <input
+                    type="pincode"
+                    name="zone"
+                    placeholder="pincode"
+                    className="form-control"
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
             </div>
-            <div className="modal-footer">
+
+            {/* Footer */}
+            <div className="modal-footer border-0 px-4 pb-4">
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -243,29 +287,15 @@ const AddAgentModal = ({ show, onClose, onSuccess }) => {
               >
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary">
-                Save Agent
+              <button type="submit" className="btn btn-primary px-4">
+                Save
               </button>
             </div>
           </form>
         </div>
       </div>
-      <style>
-        {`
-        .form-group{
-        display:flex;
-        flex-direction:row;
-        align-items:center;
-        justify-content:between;
-        gap:10px;
-        }
-        .form-group label{
-        width:100px;
-        }
-        `}
-      </style>
     </div>
   );
 };
 
-export default AddAgentModal;
+export default AddHealthcareModal;

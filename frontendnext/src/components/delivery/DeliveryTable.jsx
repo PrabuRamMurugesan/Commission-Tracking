@@ -1,15 +1,19 @@
-// src/components/FranciseTable.jsx
+// src/components/DeliveryTable.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { FaArrowUp, FaRegEye } from "react-icons/fa";
 import { LuArrowUp10 } from "react-icons/lu";
 import { VscActivateBreakpoints } from "react-icons/vsc";
-const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
+
+const DeliveryTable = ({ francise = [], loading, refreshList, setToast }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const tableContainerRef = useRef(null);
 
-  // Handle scroll detection
+  // Scroll detection
   const handleScroll = () => {
-    if (tableContainerRef.current.scrollTop > 200) {
+    if (
+      tableContainerRef.current &&
+      tableContainerRef.current.scrollTop > 200
+    ) {
       setShowScrollTop(true);
     } else {
       setShowScrollTop(false);
@@ -29,13 +33,16 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
     };
   }, []);
 
-  // Scroll to top function
+  // Scroll to top
   const scrollToTop = () => {
-    tableContainerRef.current.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
   };
+
   return (
     <div className="position-relative">
       <div
@@ -44,11 +51,9 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
         style={{
           maxHeight: "500px",
           overflowY: "auto",
-          maxHeight: "500px",
-          overflowY: "auto",
-          overflowX: "auto", // ✅ enable x-scroll
-          WebkitOverflowScrolling: "touch", // ✅ smooth scroll for touch devices
-          cursor: "grab", // 👆 optional: shows grab cursor
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          cursor: "grab",
         }}
         onMouseDown={(e) => {
           const el = e.currentTarget;
@@ -58,8 +63,9 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
           const handleMouseMove = (ev) => {
             ev.preventDefault();
             const x = ev.pageX - el.offsetLeft;
-            const walk = (x - startX) * 1; // scroll speed multiplier
+            const walk = (x - startX) * 1;
             el.scrollLeft = scrollLeft - walk;
+            document.addEventListener("mousemove", handleMouseUp);
           };
 
           const handleMouseUp = () => {
@@ -73,7 +79,7 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
       >
         <table className="table table-striped table-hover align-middle">
           <thead
-            className="table-dark "
+            className="table-dark"
             style={{ position: "sticky", top: 0, zIndex: 1 }}
           >
             <tr className="text-nowrap">
@@ -81,19 +87,16 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
               <th>ID</th>
               <th>Name</th>
               <th>Email</th>
-              <td>BPC</td>
-              <td>PAN</td>
-              <td>GSTIN</td>
+              <th>BPC</th>
+              <th>PAN</th>
+              <th>GSTIN</th>
               <th>Phone</th>
-              <th>Platform</th>
-
-              <th>Status</th>
-
+        
               <th>District</th>
               <th>State</th>
               <th>City</th>
               <th>Pincode</th>
-
+              <th>Status</th>
               <th>Customers</th>
               <th>Transactions</th>
               <th>Earned</th>
@@ -105,28 +108,32 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="13" className="text-center">
-                  Loading Francise...
+                <td colSpan="17" className="text-center">
+                  Loading Franchise...
                 </td>
               </tr>
-            ) : francise.length === 0 ? (
+            ) : !Array.isArray(francise) || francise.length === 0 ? (
               <tr>
-                <td colSpan="13" className="text-center">
-                  No Francise found
+                <td colSpan="17" className="text-center">
+                  No Delivery found
                 </td>
               </tr>
             ) : (
               francise.map((agent, index) => (
-                <tr key={agent._id}>
+                <tr key={agent._id || index}>
                   <td>{index + 1}</td>
-                  <td>{agent._id}</td>
-                  <td>{agent.name}</td>
-                  <td>{agent.email}</td>
-                  <td>{agent.businessPartnerCode}</td>
-                  <td>{agent.pan}</td>
-                  <td>{agent.gstin}</td>
-                  <td>{agent.phone}</td>
-                  <td>{agent.platform}</td>
+                  <td>{agent._id || "—"}</td>
+                  <td>{agent.name || "—"}</td>
+                  <td>{agent.email || "—"}</td>
+                  <td>{agent.bpc || "—"}</td>
+                  <td>{agent.pan || "—"}</td>
+                  <td>{agent.gstin || "—"}</td>
+                  <td>{agent.phone || "—"}</td>
+                  <td>{agent.platform || "—"}</td>
+                  <td>{agent.district || "—"}</td>
+                  <td>{agent.state || "—"}</td>
+                  <td>{agent.city || "—"}</td>
+                  <td>{agent.pincode || "—"}</td>
                   <td>
                     <span
                       className={`badge bg-${
@@ -135,26 +142,23 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
                           : "secondary"
                       }`}
                     >
-                      {agent.accountStatus}
+                      {agent.accountStatus || "inactive"}
                     </span>
                   </td>
-
-                  <td>{agent.district}</td>
-                  <td>{agent.state}</td>
-                  <td>{agent.city}</td>
-                  <td>{agent.pincode}</td>
                   <td>{agent.totalCustomers || 0}</td>
                   <td>{agent.totalTransactions || 0}</td>
                   <td>₹{agent.commissionEarned || 0}</td>
                   <td>₹{agent.commissionPending || 0}</td>
                   <td>
-                    {new Date(
-                      agent.joinedDate || agent.createdAt
-                    ).toLocaleDateString()}
+                    {agent.joinedDate || agent.createdAt
+                      ? new Date(
+                          agent.joinedDate || agent.createdAt
+                        ).toLocaleDateString()
+                      : "—"}
                   </td>
                   <td>
                     <div
-                      className="btn-group btn-group-sm d-flex justify-content-center  gap-2 text-center"
+                      className="btn-group btn-group-sm d-flex justify-content-center gap-2 text-center"
                       role="group"
                       aria-label="Actions"
                     >
@@ -176,11 +180,12 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
           </tbody>
         </table>
       </div>
+
       {/* Scroll to Top Button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="btn btn-dark rounded-circle shadow position-absolute d-flex align-items-center justify-content-center "
+          className="btn btn-dark rounded-circle shadow position-absolute d-flex align-items-center justify-content-center"
           style={{
             bottom: "20px",
             right: "20px",
@@ -196,4 +201,4 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
   );
 };
 
-export default FranciseTable;
+export default DeliveryTable;

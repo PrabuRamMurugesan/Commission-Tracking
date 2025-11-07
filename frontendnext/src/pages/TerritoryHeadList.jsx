@@ -6,6 +6,8 @@ import TerritoryFilterBar from "../components/TerritoryHead/TerritoryFilterBar";
 import AddTerritoryModal from "../components/TerritoryHead/AddTerritoryHeadModal";
 import ToastMessage from "../components/ToastMessage";
 import { exportAgentsToCSV } from "../utils/exportHelpers";
+import Sidebar from "../components/Sidebar";
+import { FaSitemap } from "react-icons/fa";
 const TerritoryHeadList = () => {
   const [territory, setTerritory] = useState([]);
   const [filteredTerritory, setFilteredTerritory] = useState([]);
@@ -29,7 +31,11 @@ const TerritoryHeadList = () => {
       setLoading(false);
     } catch (err) {
       console.error("Error loading Territory:", err);
-      setToast({ show: true, message: "Failed to load Territory", type: "error" });
+      setToast({
+        show: true,
+        message: "Failed to load Territory",
+        type: "error",
+      });
       setLoading(false);
     }
   };
@@ -47,53 +53,88 @@ const TerritoryHeadList = () => {
     });
     setShowModal(false);
   };
-
+  const [collapsed, setCollapsed] = useState(false);
   return (
-    <div className="container-fluid mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3>Territory List</h3>
-        <div>
-          <button
-            className="btn btn-primary me-2"
-            onClick={() => setShowModal(true)}
+    <>
+      <div className="d-flex flex-row vw-100">
+        <Sidebar />
+        <div
+          className={`d-flex align-items-start justify-content-center flex-grow-1 transition-all `}
+          style={{
+            width: collapsed ? "100vw" : "calc(100vw - 280px)", // adjust this width to match sidebar width
+            margin: "4rem 0",
+            transition: "all 0.3s ease-in-out",
+          }}
+        >
+          <div
+            className="d-flex flex-column gap-3 border rounded-3 shadow-sm bg-white p-5 w-100 "
+            style={{
+              maxWidth: "1400px",
+              minHeight: "90vh",
+              transition: "all 0.3s ease-in-out",
+            }}
           >
-            ➕ Add Territory
-          </button>
-          <button className="btn btn-outline-secondary" onClick={fetchTerritory}>
-            🔄 Refresh
-          </button>
-          <button
-            className="btn btn-outline-success"
-            onClick={() => exportAgentsToCSV(filteredTerritory)}
-          >
-            📤 Export CSV
-          </button>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h3
+                className="fw-semibold text-dark mb-3 mx-2 d-flex align-items-center"
+                style={{ fontFamily: "'Poppins', 'Segoe UI', sans-serif" }}
+              >
+                {" "}
+                <FaSitemap className="me-2 text-dark" />
+                Territory List
+              </h3>
+
+              <div className="d-flex gap-3">
+                <button
+                  className="btn btn-outline-dark"
+                  onClick={() => setShowModal(true)}
+                >
+                  Add Territory
+                </button>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={fetchTerritory}
+                >
+                  Refresh
+                </button>
+                <button
+                  className="btn btn-outline-success"
+                  onClick={() => exportAgentsToCSV(filteredTerritory)}
+                >
+                  Export CSV
+                </button>
+              </div>
+            </div>
+
+            <TerritoryFilterBar
+              territory={territory}
+              setFilteredTerritory={setFilteredTerritory}
+            />
+
+            <TerritoryTable
+              territory={filteredTerritory}
+              loading={loading}
+              refreshList={fetchTerritory}
+              setToast={setToast}
+            />
+
+            <AddTerritoryModal
+              show={showModal}
+              onClose={() => setShowModal(false)}
+              onSuccess={handleAddSuccess}
+            />
+
+            {toast.show && (
+              <ToastMessage
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, show: false })}
+              />
+            )}
+          </div>
         </div>
       </div>
-
-      <TerritoryFilterBar territory={territory} setFilteredTerritory={setFilteredTerritory} />
-
-      <TerritoryTable
-        territory={filteredTerritory}
-        loading={loading}
-        refreshList={fetchTerritory}
-        setToast={setToast}
-      />
-
-      <AddTerritoryModal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        onSuccess={handleAddSuccess}
-      />
-
-      {toast.show && (
-        <ToastMessage
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

@@ -1,8 +1,11 @@
 // src/components/AddTerritoryModal.jsx
 import React, { useState } from "react";
 import axios from "axios";
+import { IoEyeOutline } from "react-icons/io5";
+import { IoEyeOffSharp } from "react-icons/io5";
 
 const AddTerritoryModal = ({ show, onClose, onSuccess }) => {
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -39,99 +42,203 @@ const AddTerritoryModal = ({ show, onClose, onSuccess }) => {
   if (!show) return null;
 
   return (
-    <div className="modal show fade d-block" tabIndex="-1" role="dialog">
-      <div className="modal-dialog">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">Add New Territory</h5>
+    <div
+      className="modal show fade d-block justify-content-center align-items-center"
+      style={{
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 1050,
+      }}
+      role="dialog"
+    >
+      <div
+        className="modal-dialog modal-lg"
+        style={{ maxWidth: "900px", width: "90%" }}
+      >
+        <div className="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+          {/* Header */}
+          <div className="modal-header bg-dark text-white">
+            <h5 className="modal-title fw-semibold">Add New Territory</h5>
             <button
               type="button"
-              className="btn-close"
+              className="btn-close btn-close-white me-2 m-auto"
               onClick={onClose}
             ></button>
           </div>
           <form onSubmit={handleSubmit}>
-            <div className="modal-body">
-              <input
-                type="text"
-                name="name"
-                placeholder="Name"
-                className="form-control mb-2"
-                required
-                onChange={handleChange}
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                className="form-control mb-2"
-                required
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="phone"
-                placeholder="Phone"
-                className="form-control mb-2"
-                required
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="whatsappNumber"
-                placeholder="WhatsApp Number"
-                className="form-control mb-2"
-                onChange={handleChange}
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                className="form-control mb-2"
-                required
-                onChange={handleChange}
-              />
-              <select
-                name="platform"
-                className="form-select mb-2"
-                onChange={handleChange}
-                defaultValue="BBSCART"
-              >
-                <option value="BBSCART">BBSCART</option>
-                <option value="Golldex">Golldex</option>
-                <option value="Thiaworld">Thiaworld</option>
-              </select>
-              <input
-                type="text"
-                name="franchiseeId"
-                placeholder="Franchisee ID"
-                className="form-control mb-2"
-                required
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="stateCode"
-                placeholder="State Code (e.g. TN)"
-                className="form-control mb-2"
-                required
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="cityCode"
-                placeholder="City Code (e.g. CHN)"
-                className="form-control mb-2"
-                required
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="zone"
-                placeholder="Zone"
-                className="form-control mb-2"
-                onChange={handleChange}
-              />
+            <div className="modal-body p-4">
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label htmlFor="name">Name : </label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Name"
+                    className="form-control mb-2"
+                    required
+                    onChange={handleChange}
+                  />{" "}
+                </div>
+
+                <div className="col-md-6">
+                  <label htmlFor="email">E-mail : </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    className="form-control mb-2"
+                    required
+                    onChange={handleChange}
+                  />{" "}
+                </div>
+
+                <div className="col-md-6">
+                  <label htmlFor="phone">Contact : </label>
+                  <input
+                    type="text"
+                    name="phone"
+                    placeholder="Phone"
+                    className="form-control mb-2"
+                    required
+                    onChange={handleChange}
+                  />{" "}
+                </div>
+
+                <div className="col-md-6">
+                  <label htmlFor="whatsapp"></label>
+                  <input
+                    type="text"
+                    name="whatsappNumber"
+                    placeholder="WhatsApp Number"
+                    className="form-control mb-2"
+                    onChange={handleChange}
+                  />{" "}
+                </div>
+                {/* PAN */}
+                <div className="col-md-6">
+                  <label className="form-label">PAN</label>
+                  <input
+                    type="text"
+                    name="pan"
+                    placeholder="PAN Number"
+                    className="form-control"
+                    required
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* GST */}
+                <div className="col-md-6">
+                  <label className="form-label">GSTIN</label>
+                  <input
+                    type="text"
+                    name="gstNumber"
+                    placeholder="GST Number"
+                    className="form-control"
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-6 position-relative">
+                  <label className="form-label" htmlFor="password">
+                    Password :
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    className="form-control"
+                    required
+                    onChange={handleChange}
+                  />{" "}
+                  <button
+                    type="button"
+                    className="btn  translate-middle-y me-2 border-0 bg-transparent text-secondary"
+                    style={{ position: "absolute", top: "60%", right: "0px" }}
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <IoEyeOffSharp size={20} />
+                    ) : (
+                      <IoEyeOutline size={20} />
+                    )}
+                  </button>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">Platform : </label>
+                  <select
+                    name="platform"
+                    className="form-select mb-2"
+                    onChange={handleChange}
+                    defaultValue="BBSCART"
+                  >
+                    <option value="BBSCART">BBSCART</option>
+                    <option value="Golldex">Golldex</option>
+                    <option value="Thiaworld">Thiaworld</option>
+                  </select>{" "}
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Admin ID : </label>
+                  <input
+                    type="text"
+                    name="franchiseeId"
+                    placeholder="Franchisee ID"
+                    className="form-control"
+                    required
+                    onChange={handleChange}
+                  />{" "}
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">State</label>
+                  <input
+                    type="text"
+                    name="stateCode"
+                    placeholder="State Code (e.g. TN)"
+                    className="form-control"
+                    required
+                    onChange={handleChange}
+                  />{" "}
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">District</label>
+                  <input
+                    type="text"
+                    name="district"
+                    placeholder="district"
+                    className="form-control"
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">City :</label>
+                  <input
+                    type="text"
+                    name="cityCode"
+                    placeholder="City Code (e.g. CHN)"
+                    className="form-control mb-2"
+                    required
+                    onChange={handleChange}
+                  />{" "}
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">State</label>
+                  <input
+                    type="text"
+                    name="state"
+                    placeholder="State"
+                    className="form-control"
+                    onChange={handleChange}
+                  />{" "}
+                </div>
+              </div>
             </div>
             <div className="modal-footer">
               <button
@@ -148,6 +255,20 @@ const AddTerritoryModal = ({ show, onClose, onSuccess }) => {
           </form>
         </div>
       </div>
+      <style>
+        {`
+        .form-group{
+        display:flex;
+        flex-direction:row;
+        align-items:center;
+        justify-content:between;
+        gap:10px;
+        }
+        .form-group label{
+        width:100px;
+        }
+        `}
+      </style>
     </div>
   );
 };

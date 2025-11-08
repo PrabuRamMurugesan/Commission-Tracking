@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-
+import { GiHamburgerMenu } from "react-icons/gi";
+import { MdDeliveryDining } from "react-icons/md";
+import { MdOutlineHealthAndSafety } from "react-icons/md";
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
-  const [agents, setAgents] = useState([]);
   const [dashboardUsers, setDashboardUsers] = useState({
     agents: [],
     vendors: [],
   });
-
   const [dropdowns, setDropdowns] = useState({
     franchise: false,
     territory: false,
@@ -18,87 +18,64 @@ const Sidebar = () => {
     customerVendorDetails: false,
     customerDetails: false,
     monsterProduct: false,
+    delivery: false,
+    healthcare: false,
   });
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
+  // ✅ Get user safely
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user?.role || "guest";
 
+  // ✅ Sidebar toggle
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
+  // ✅ Dropdown toggle — only one open at a time
   const toggleDropdown = (menu) => {
     setDropdowns((prev) => {
-      const updatedDropdowns = {};
-      for (const key in prev) {
-        updatedDropdowns[key] = key === menu ? !prev[key] : false;
-      }
-      return updatedDropdowns;
+      const newState = {};
+      Object.keys(prev).forEach((key) => {
+        newState[key] = key === menu ? !prev[key] : false;
+      });
+      return newState;
     });
   };
 
-  // useEffect(() => {
-  //   const fetchAgents = async () => {
-  //     try {
-  //       const res = await axios.get("http://localhost:3000/api/agents");
-  //       setAgents(res.data.agents);
-  //       console.log(res, "res.data.agents");
-
-  //     } catch (err) {
-  //       console.error("Error loading agents:", err);
-  //     }
-  //   };
-
-  //   if (user?.role === "admin") {
-  //     fetchAgents();
-  //   }
-  // }, []);
+  // ✅ Load dashboard roles (only for admin)
   useEffect(() => {
+    if (role !== "admin") return;
+
     const loadDashboards = async () => {
       try {
-        console.log("📡 Fetching dashboard user lists from /api/users/by-role");
-
+        console.log("📡 Fetching dashboard roles...");
         const res = await axios.get("/api/users/by-role");
-
-        console.log("✅ Raw API Response:", res.data);
-        console.log("🟢 Agents List:", res.data.agents);
-        console.log("🟢 Vendors List:", res.data.vendors);
-
-        setDashboardUsers(res.data);
+        setDashboardUsers(res.data || {});
+        console.log("✅ Dashboard roles loaded:", res.data);
       } catch (err) {
-        console.error(
-          "❌ Failed to load dashboard roles:",
-          err?.response?.data || err.message
-        );
+        console.error("❌ Failed to load dashboard roles:", err?.message);
       }
     };
 
-    if (user?.role === "admin") {
-      console.log("🧠 Logged-in as Admin – Loading all dashboard roles");
-      loadDashboards();
-    } else {
-      console.warn("⚠️ Not admin, skipping dashboard user load");
-    }
-  }, []);
-  // Get user role from localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role;
+    loadDashboards();
+  }, [role]);
 
   return (
     <div
       className={`sidebar text-white p-3 ${isOpen ? "expanded" : "collapsed"}`}
     >
-      <div className="sidebar-toggle" onClick={toggleSidebar}>
-        ☰
+      {/* Sidebar toggle button */}
+      <div style={{ cursor: "pointer" }} onClick={toggleSidebar}>
+        <GiHamburgerMenu className="sidebar-toggle mx-2" />
       </div>
-      <ul className="nav flex-column">
-        {/* CBV DASHBOARDS */}
 
-        {/* Franchise */}
+      <ul className="nav flex-column">
+        {/* 🏢 Franchise Dashboard */}
         {(role === "franchise" || role === "admin") && (
           <li>
             <div
               className="dropdown-toggle"
               onClick={() => toggleDropdown("franchise")}
             >
-              <span>💰</span> Franchise Dashboard
+              💰 Franchise Dashboard
             </div>
             {dropdowns.franchise && (
               <ul className="submenu">
@@ -143,14 +120,14 @@ const Sidebar = () => {
           </li>
         )}
 
-        {/* Territory Head */}
+        {/* 🧑‍💼 Territory Head */}
         {(role === "territory-head" || role === "admin") && (
           <li>
             <div
               className="dropdown-toggle"
               onClick={() => toggleDropdown("territory")}
             >
-              <span>👔</span> Territory Head
+              👔 Territory Head
             </div>
             {dropdowns.territory && (
               <ul className="submenu">
@@ -158,6 +135,8 @@ const Sidebar = () => {
                   <Link className="submenu-item" to="/dashboard/territory-list">
                     Territory List
                   </Link>
+                </li>
+                <li>
                   <Link className="submenu-item" to="/dashboard/agent-list">
                     Agent List
                   </Link>
@@ -188,14 +167,14 @@ const Sidebar = () => {
           </li>
         )}
 
-        {/* Agent */}
+        {/* 👨‍💼 Agent Dashboard */}
         {(role === "agent" || role === "admin") && (
           <li>
             <div
               className="dropdown-toggle"
               onClick={() => toggleDropdown("agentList")}
             >
-              <span>👔</span> Agent Dashboard
+              👔 Agent Dashboard
             </div>
             {dropdowns.agentList && (
               <ul className="submenu">
@@ -225,26 +204,23 @@ const Sidebar = () => {
           </li>
         )}
 
-        {/* Vendor */}
+        {/* 🏬 Vendor Dashboard */}
         {(role === "vendor" || role === "admin") && (
           <li>
             <div
               className="dropdown-toggle"
               onClick={() => toggleDropdown("vendor")}
             >
-              <span>🏢</span> Vendor Dashboard
+              🏢 Vendor Dashboard
             </div>
             {dropdowns.vendor && (
               <ul className="submenu">
                 <li>
-                  {/* <Link className="submenu-item" to="/dashboard/customer-list">
-                    Customer list
-                  </Link> */}
                   <Link
                     className="submenu-item"
                     to="/dashboard/vendor-customer-list"
                   >
-                    Customer list
+                    Customer List
                   </Link>
                 </li>
                 <li>
@@ -260,14 +236,14 @@ const Sidebar = () => {
           </li>
         )}
 
-        {/* Customer Become a Vendor */}
+        {/* 🛍 Customer Become Vendor */}
         {(role === "customer-become-vendor" || role === "admin") && (
           <li>
             <div
               className="dropdown-toggle"
               onClick={() => toggleDropdown("customerVendorDetails")}
             >
-              <span>🛍️</span> Customer Become A Vendor
+              🛍️ Customer Become A Vendor
             </div>
             {dropdowns.customerVendorDetails && (
               <ul className="submenu">
@@ -276,7 +252,7 @@ const Sidebar = () => {
                     className="submenu-item"
                     to="/dashboard/cbv-customer-list"
                   >
-                    Customer list
+                    Customer List
                   </Link>
                 </li>
                 <li>
@@ -292,14 +268,14 @@ const Sidebar = () => {
           </li>
         )}
 
-        {/* Customer */}
+        {/* 🧍 Customer */}
         {(role === "customer" || role === "admin") && (
           <li>
             <div
               className="dropdown-toggle"
               onClick={() => toggleDropdown("customerDetails")}
             >
-              <span>🧍</span>Customer
+              🧍 Customer
             </div>
             {dropdowns.customerDetails && (
               <ul className="submenu">
@@ -316,20 +292,84 @@ const Sidebar = () => {
           </li>
         )}
 
+        {/* 🏥 Healthcare Partner */}
+        {(role === "Healthcare" || role === "admin") && (
+          <li>
+            <div
+              className="dropdown-toggle d-flex align-items-center"
+              onClick={() => toggleDropdown("healthcare")}
+            >
+              <MdOutlineHealthAndSafety
+                className="text-primary me-1"
+                size={20}
+              />{" "}
+              Healthcare Partner
+            </div>
+            {dropdowns.healthcare && (
+              <ul className="submenu">
+                <li>
+                  <Link
+                    className="submenu-item"
+                    to="/dashboard/healthcare-list"
+                  >
+                    Healthcare List
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="submenu-item"
+                    to="/dashboard/transaction-history"
+                  >
+                    Transaction History
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+        )}
+
+        {/* 🚚 Delivery Partner */}
+        {(role === "delivery" || role === "admin") && (
+          <li>
+            <div
+              className="dropdown-toggle"
+              onClick={() => toggleDropdown("delivery")}
+            >
+              <MdDeliveryDining className="text-danger me-2" size={20} />{" "}
+              Delivery Partner
+            </div>
+            {dropdowns.delivery && (
+              <ul className="submenu">
+                <li>
+                  <Link className="submenu-item" to="/dashboard/delivery-list">
+                    Delivery List
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="submenu-item"
+                    to="/dashboard/delivery-transactions"
+                  >
+                    Transaction History
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+        )}
+
+        {/* 🧩 Monster Product Ops */}
         {(role === "admin" || role === "staff") && (
           <li>
             <div
               className="dropdown-toggle"
               onClick={() => toggleDropdown("monsterProduct")}
             >
-              <span>🧩</span> Monster Product Ops
+              🧩 Monster Product Ops
             </div>
             {dropdowns.monsterProduct && (
               <ul className="submenu">
                 <li>
-                  {/* <Link className="submenu-item" to="/dashboard/customer-list">
-                    Customer list
-                  </Link> */}
                   <Link className="submenu-item" to="/admin/bulk-upload">
                     Bulk Upload
                   </Link>
@@ -349,156 +389,118 @@ const Sidebar = () => {
           </li>
         )}
 
-        {/* Common Items and Reports */}
+        {/* Common Links */}
         <li>
           <Link className="nav-link text-white" to="/Items">
             📦 Items
           </Link>
         </li>
-
         <li>
           <Link className="nav-link text-white" to="/Reports">
             📈 Reports
           </Link>
         </li>
-        <ul className="nav flex-column">
-          <li className="nav-item">
+      </ul>
+
+      {/* Static Admin Links */}
+      {(role === "admin" || role === "staff") && (
+        <ul className="nav flex-column mt-3">
+          <li>
             <a className="nav-link text-white" href="/admin/upload">
               📤 Upload Products
             </a>
           </li>
-          <li className="nav-item">
+          <li>
             <a className="nav-link text-white" href="/admin/upload-logs">
               🧾 Upload Logs
             </a>
           </li>
-          <li className="nav-item">
+          <li>
             <a className="nav-link text-white" href="/admin/rollback">
               ⏪ Rollback Manager
             </a>
           </li>
-          <li className="nav-item">
+          <li>
             <a className="nav-link text-white" href="/admin/audit">
               📋 Audit Trail
             </a>
           </li>
-          <li className="nav-item">
-            <a className="nav-link" href="/admin/flagged">
+          <li>
+            <a className="nav-link text-white" href="/admin/flagged">
               🚩 Flagged Products
             </a>
           </li>
         </ul>
-      </ul>
+      )}
 
-      {/* Styles */}
-      <style>
-        {`
+      {/* Inline Styles */}
+      <style>{`
+        .sidebar {
+          width: 350px;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          margin-top: 60px;
+          background-color: black;
+          overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+          width: 70px;
+          background-color: white;
+          transition: width 0.3s ease;
+        }
+
+        .sidebar-toggle {
+          margin-bottom: 20px;
+          font-size: 30px;
+          background: white;
+          color: black;
+          border-radius: 5px;
+          padding: 3px;
+        }
+
+        .dropdown-toggle {
+          cursor: pointer;
+          margin: 10px 0;
+          padding: 10px 15px;
+          border-radius: 5px;
+          font-size: 14px;
+          transition: background-color 0.3s ease;
+        }
+
+        .submenu {
+          list-style: none;
+          padding-left: 40px;
+          font-size: 12px;
+        }
+
+        .submenu-item {
+          color: #fff;
+          text-decoration: none !important;
+          display: block;
+          padding: 5px 0;
+        }
+
+        .submenu-item:hover {
+          color: red;
+        }
+
+        .nav-link {
+          padding: 10px 15px;
+          font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
           .sidebar {
-            width: 350px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: start;
-            margin-top: 60px;
-            background-color: black;
-            overflow-y: auto;
+            width: 60%;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
           }
-
-          .sidebar.collapsed {
-            width: 60px;
-            padding: 20px;
-            background-color: white;
-            margin-top: 60px;
-            transition: transform 0.3s ease;
-            overflow-y: none;
-          }
-
-          .sidebar-toggle {
-            cursor: pointer;
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: gray;
-            gap: 10px;
-          }
-
-          .dropdown-toggle {
-            cursor: pointer;
-            margin: 10px 0;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
-          }
-
-          .dropdown-toggle span {
-            margin-right: 10px;
-          }
-
-          .submenu {
-            list-style: none;
-            padding-left: 20px;
-            display: block;
-          }
-
-          .submenu-item {
-            padding: 5px 30px;
-            color: #fff;
-            text-decoration: none;
-            display: block;
-            font-size: 14px;
-          }
-
-          .submenu-item:hover {
-            text-decoration: underline;
-          }
-
-          .nav-link {
-            padding: 15px 13px;
-            font-size: 14px;
-          }
-
-          @media (max-width: 768px) {
-            .sidebar {
-              width: 55%;
-              height: 100%;
-              position: fixed;
-              bottom: 0;
-              left: 0;
-              z-index: 1000;
-              padding: 60px;
-              margin-top: 60px;
-              display: none;
-            }
-
-            .sidebar.collapsed {
-              display: none;
-            }
-
-            .dropdown-toggle {
-              margin: 10px 0;
-              padding: 10px 15px;
-              font-size: 14px;
-            }
-
-            .nav-list {
-              display: flex;
-              flex-direction: row;
-              width: 100%;
-            }
-
-            .nav-list li {
-              flex: 1;
-              text-align: center;
-            }
-          }
-
-          @media (max-width: 769px) {
-            .sidebar-toggle {
-              display: none;
-            }
-          }
-        `}
-      </style>
+        }
+      `}</style>
     </div>
   );
 };

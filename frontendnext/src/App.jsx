@@ -144,7 +144,8 @@ import AuditTrailPage from "./pages/admin/AuditTrailPage";
 import FlaggedProductsPage from "./pages/admin/FlaggedProductsPage";
 import RotationManager from "./pages/admin/RotationManager";
 import TodayVendorViewer from "./pages/admin/TodayVendorViewer";
-
+import DeliveryList from "./components/delivery/Delivery";
+import HealthcareList from "./components/healthcarePartner/Healthcare";
 
 
 function App() {
@@ -277,6 +278,14 @@ function App() {
             <Route
               path="/dashboard/cbv-customer-list"
               element={<CbvCustomerList />} //Done this
+            />
+            <Route
+              path="/dashboard/delivery-list"
+              element={<DeliveryList />} //Done this
+            />
+            <Route
+              path="/dashboard/healthcare-list"
+              element={<HealthcareList />} //Done this
             />
             <Route
               path="/dashboard/franchise-list"

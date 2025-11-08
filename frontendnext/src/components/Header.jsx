@@ -1,7 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // ✅ Watch for route changes or storage changes
+  useEffect(() => {
+    const loggedIn =
+      localStorage.getItem("isLoggedIn") === "true" ||
+      !!localStorage.getItem("authToken");
+    setIsLoggedIn(loggedIn);
+  }, [location]); // re-check every time user navigates
+
+  // ✅ Also listen for manual storage changes (like other tabs or manual localStorage edits)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const loggedIn =
+        localStorage.getItem("isLoggedIn") === "true" ||
+        !!localStorage.getItem("authToken");
+      setIsLoggedIn(loggedIn);
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("authToken");
+    setIsLoggedIn(false);
+    navigate("/"); // redirect to login/home
+  };
 
   const toggleDropdown = (isVisible) => {
     setShowDropdown(isVisible);
@@ -9,7 +40,10 @@ const Header = () => {
 
   return (
     <header className="header">
-      <h1>Commission Tracking System</h1>
+      <h1>
+        <a href="/dashboard">Commission Tracking System</a>
+      </h1>
+
       <nav>
         <ul>
           <li>
@@ -54,8 +88,29 @@ const Header = () => {
             <a href="/profile">Profile</a>
           </li>
           <li>
-            <a href="/">Logout</a>
+            <Link to="/">Home</Link>
           </li>
+
+          {!isLoggedIn ? (
+            <li>
+              <Link to="/">Login</Link>
+            </li>
+          ) : (
+            <li>
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "white",
+                  fontWeight: "bold",
+                }}
+              >
+                Logout
+              </button>
+            </li>
+          )}
         </ul>
       </nav>
 
@@ -238,6 +293,14 @@ const Header = () => {
             background-color: #0d67da;
           }
         }
+          h1 a {
+  text-decoration: none;
+  color: inherit;
+}
+h1 a:hover {
+  color: #0077c0;
+}
+
       `}</style>
     </header>
   );

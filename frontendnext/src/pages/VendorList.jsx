@@ -6,6 +6,8 @@ import VendorFilterBar from "../components/Vendor/VendorFilterBar";
 import AddVendorModal from "../components/Vendor/AddVendorModal";
 import ToastMessage from "../components/ToastMessage";
 import { exportAgentsToCSV } from "../utils/exportHelpers";
+import Sidebar from "../components/Sidebar";
+import { FaVenusDouble } from "react-icons/fa";
 const VendorList = () => {
   const [vendor, setVendor] = useState([]);
   const [filteredVendor, setFilteredVendor] = useState([]);
@@ -47,53 +49,87 @@ const VendorList = () => {
     });
     setShowModal(false);
   };
-
+  const [collapsed, setCollapsed] = useState(false);
   return (
-    <div className="container-fluid mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3>Vendor List</h3>
-        <div>
-          <button
-            className="btn btn-primary me-2"
-            onClick={() => setShowModal(true)}
+    <>
+      <div className="d-flex flex-row vw-100">
+        <Sidebar />
+        <div
+          className={`d-flex align-items-start justify-content-center flex-grow-1 transition-all `}
+          style={{
+            width: collapsed ? "100vw" : "calc(100vw - 280px)", // adjust this width to match sidebar width
+            margin: "4rem 0",
+            transition: "all 0.3s ease-in-out",
+          }}
+        >
+          <div
+            className="d-flex flex-column gap-3 border rounded-3 shadow-sm bg-white p-5 w-100 "
+            style={{
+              maxWidth: "1400px",
+              minHeight: "90vh",
+              transition: "all 0.3s ease-in-out",
+            }}
           >
-            ➕ Add Vendor
-          </button>
-          <button className="btn btn-outline-secondary" onClick={fetchVendor}>
-            🔄 Refresh
-          </button>
-          <button
-            className="btn btn-outline-success"
-            onClick={() => exportAgentsToCSV(filteredVendor)}
-          >
-            📤 Export CSV
-          </button>
+            <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+              <h3
+                className="fw-semibold text-dark mb-3 mx-2 d-flex align-items-center"
+                style={{ fontFamily: "'Poppins', 'Segoe UI', sans-serif" }}
+              >
+                {" "}
+                <FaVenusDouble className="me-2 text-dark" />
+                Vendor List
+              </h3>
+              <div className="d-flex gap-3">
+                <button
+                  className="btn btn-outline-dark "
+                  onClick={() => setShowModal(true)}
+                >
+                  Add Vendor
+                </button>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={fetchVendor}
+                >
+                  Refresh
+                </button>
+                <button
+                  className="btn btn-outline-success"
+                  onClick={() => exportAgentsToCSV(filteredVendor)}
+                >
+                  Export CSV
+                </button>
+              </div>
+            </div>
+
+            <VendorFilterBar
+              vendor={vendor}
+              setFilteredVendor={setFilteredVendor}
+            />
+
+            <VendorTable
+              vendor={filteredVendor}
+              loading={loading}
+              refreshList={fetchVendor}
+              setToast={setToast}
+            />
+
+            <AddVendorModal
+              show={showModal}
+              onClose={() => setShowModal(false)}
+              onSuccess={handleAddSuccess}
+            />
+
+            {toast.show && (
+              <ToastMessage
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, show: false })}
+              />
+            )}
+          </div>
         </div>
       </div>
-
-      <VendorFilterBar vendor={vendor} setFilteredVendor={setFilteredVendor} />
-
-      <VendorTable
-        vendor={filteredVendor}
-        loading={loading}
-        refreshList={fetchVendor}
-        setToast={setToast}
-      />
-
-      <AddVendorModal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        onSuccess={handleAddSuccess}
-      />
-
-      {toast.show && (
-        <ToastMessage
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

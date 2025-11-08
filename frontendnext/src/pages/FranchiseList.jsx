@@ -27,6 +27,8 @@ const FranchiseList = () => {
         },
       });
       setFrancise(res.data.francise);
+      console.log(res.data, "res.data");
+
       console.log(res.data.francise, "res.data.francise");
 
       setFilteredFrancise(res.data.francise);

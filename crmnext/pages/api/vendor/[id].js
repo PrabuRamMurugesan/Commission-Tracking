@@ -1,4 +1,4 @@
-// crmnext/pages/api/vendor/[id].js
+
 
 import {
   getVendorById,

@@ -37,7 +37,7 @@ const CbvCustomerList = () => {
   useEffect(() => {
     const fetchCbvs = async () => {
       try {
-        const res = await axios.get("/api/users/by-role");
+        const res = await axios.get("/api/cbv");
         console.log("🧾 Cbv API Response:", res.data.cbv); // ✅ ADD THIS
 
         setCbvs(res.data.cbv || []);

@@ -102,11 +102,11 @@ const Sidebar = () => {
                     Customer List
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link className="submenu-item" to="/dashboard/cbv-list">
                     CBV List
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link
                     className="submenu-item"
@@ -142,6 +142,11 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link className="submenu-item" to="/dashboard/vendor-list">
+                    Vendor List
+                  </Link>
+                </li>
+                <li>
                   <Link
                     className="submenu-item"
                     to="/dashboard/territory-customer-list"
@@ -149,11 +154,7 @@ const Sidebar = () => {
                     Customer List
                   </Link>
                 </li>
-                <li>
-                  <Link className="submenu-item" to="/dashboard/vendor-list">
-                    Vendor List
-                  </Link>
-                </li>
+
                 <li>
                   <Link
                     className="submenu-item"
@@ -179,6 +180,11 @@ const Sidebar = () => {
             {dropdowns.agentList && (
               <ul className="submenu">
                 <li>
+                  <Link className="submenu-item" to="/dashboard/vendor-list">
+                    Vendor List
+                  </Link>
+                </li>
+                <li>
                   <Link
                     className="submenu-item"
                     to="/dashboard/agent-customer-list"
@@ -186,11 +192,7 @@ const Sidebar = () => {
                     Customer List
                   </Link>
                 </li>
-                <li>
-                  <Link className="submenu-item" to="/dashboard/vendor-list">
-                    Vendor List
-                  </Link>
-                </li>
+
                 <li>
                   <Link
                     className="submenu-item"

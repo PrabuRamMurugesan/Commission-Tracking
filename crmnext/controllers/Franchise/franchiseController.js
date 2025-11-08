@@ -5,27 +5,92 @@ import { validateFrancisePayload } from "../../utils/validateFranchise.js";
 import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js";
 
 // ✅ GET All Francises (optionally by franchiseeId or platform)
+// ✅ GET All Franchises (normalized for UI)
 export const getAllFranchises = async (req, res) => {
   try {
     const db = await getBBSliveDb();
     const col = db.collection("franchiseheads");
-    const { franchiseeId, platform } = req.query;
-    const filter = {};
 
-    if (franchiseeId) filter.franchiseeId = franchiseeId;
+    // accept both names: franchiseId (UI) and franchiseeId (older)
+    const rawFranchiseId = req.query.franchiseId || req.query.franchiseeId || undefined;
+    const platform = req.query.platform || undefined;
+
+    const filter = {};
+    if (rawFranchiseId) filter.franchiseeId = rawFranchiseId;
     if (platform) filter.platform = platform;
 
-    const francise = await col
-      .find(filter, {
-        projection: {
-          name: 1, email: 1, phone: 1, platform: 1, zone: 1, status: 1,
-          bpc: 1, totalCustomers: 1, totalTransactions: 1,
-          commissionEarned: 1, commissionPending: 1, joinedDate: 1,
-        },
-      })
-      .sort({ joinedDate: -1 })
-      .limit(500)
+    // fetch full docs (no projection that strips fields)
+    const docs = await col
+      .find(filter)
+      .sort({ created_at: -1, joinedDate: -1 })
+      .limit(1000)
       .toArray();
+
+    // flatten to the keys your table renders
+    const francise = docs.map((doc) => {
+      const g = (o, p, d = "—") => {
+        try { return p.split(".").reduce((a, k) => (a && a[k] !== undefined ? a[k] : undefined), o) ?? d; }
+        catch { return d; }
+      };
+
+      const name =
+        [doc.vendor_fname, doc.vendor_lname].filter(Boolean).join(" ").trim() ||
+        doc.gst_legal_name || doc.name || "—";
+
+      const email = doc.email || "—";
+      const businessPartnerCode = doc.businessPartnerCode || doc.bpc || "—";
+      const pan = doc.pan || doc.pan_number || "—";
+      const gstin = doc.gstin || doc.gst_number || "—";
+      const phone = doc.phone || doc.outlet_contact_no || doc.alt_mobile || "—";
+
+      const district = doc.district || g(doc, "gst_address.district", "—");
+      const state =
+        doc.state ||
+        g(doc, "register_business_address.state", "—") ||
+        g(doc, "gst_address.state", "—") ||
+        g(doc, "outlet_location.state", "—");
+
+      const city =
+        doc.city ||
+        g(doc, "register_business_address.city", "—") ||
+        g(doc, "outlet_location.city", "—");
+
+      const pincode =
+        doc.pincode ||
+        g(doc, "register_business_address.postalCode", "—") ||
+        g(doc, "gst_address.postalCode", "—") ||
+        g(doc, "outlet_location.postalCode", "—");
+
+      const platformOut = doc.platform || doc.role || "BBSCART";
+      const accountStatus =
+        doc.accountStatus ||
+        (doc.is_active ? "active" : doc.application_status ? String(doc.application_status) : "pending");
+
+      const joinedDate = doc.joinedDate || doc.submitted_at || doc.created_at || doc.updated_at;
+
+      return {
+        _id: String(doc._id || ""),
+        name,
+        email,
+        businessPartnerCode,
+        pan,
+        gstin,
+        phone,
+        platform: platformOut,
+        accountStatus,
+        district,
+        state,
+        city,
+        pincode,
+        totalCustomers: doc.totalCustomers || 0,
+        totalTransactions: doc.totalTransactions || 0,
+        commissionEarned: doc.commissionEarned || 0,
+        commissionPending: doc.commissionPending || 0,
+        joinedDate,
+        createdAt: doc.created_at || doc.createdAt || null,
+      };
+    });
+
     res.status(200).json({ francise });
   } catch (error) {
     console.error("Error fetching francise:", error);

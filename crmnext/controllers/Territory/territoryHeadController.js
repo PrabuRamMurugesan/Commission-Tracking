@@ -181,22 +181,83 @@ import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js"
 const COLLECTION = "territoryheads";
 
 // ✅ GET All territory (optionally by franchiseeId or platform)
+// controllers/Territory/territoryHeadController.js
 export const getAllTerritory = async (req, res) => {
   try {
     const db = await getBBSliveDb();
-    const col = db.collection(COLLECTION);
+    const col = db.collection("territoryheads");
 
     const { franchiseeId, platform } = req.query;
     const filter = {};
     if (franchiseeId) filter.franchiseeId = franchiseeId;
     if (platform) filter.platform = platform;
 
-    const territory = await col
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .toArray();
+    const docs = await col.find(filter).sort({ created_at: -1 }).limit(1000).toArray();
 
-    // keep shape
+    const g = (o, path, d = "—") => {
+      try { return path.split(".").reduce((a, k) => (a && a[k] !== undefined ? a[k] : undefined), o) ?? d; }
+      catch { return d; }
+    };
+
+    const territory = docs.map((doc) => {
+      const name =
+        [doc.vendor_fname, doc.vendor_lname].filter(Boolean).join(" ").trim() ||
+        doc.gst_legal_name || doc.name || "—";
+
+      const email = doc.email || "—";
+      const businessPartnerCode = doc.businessPartnerCode || doc.bpc || "—";
+      const pan = doc.pan || doc.pan_number || "—";
+      const gstin = doc.gstin || doc.gst_number || "—";
+      const phone = doc.phone || doc.outlet_contact_no || doc.alt_mobile || "—";
+
+      const district = doc.district || g(doc, "gst_address.district");
+      const state =
+        doc.state ||
+        g(doc, "register_business_address.state") ||
+        g(doc, "gst_address.state") ||
+        g(doc, "outlet_location.state");
+
+      const city =
+        doc.city ||
+        g(doc, "register_business_address.city") ||
+        g(doc, "outlet_location.city");
+
+      const pincode =
+        doc.pincode ||
+        g(doc, "register_business_address.postalCode") ||
+        g(doc, "gst_address.postalCode") ||
+        g(doc, "outlet_location.postalCode");
+
+      const platformOut = doc.platform || doc.role || "BBSCART";
+      const accountStatus =
+        doc.accountStatus ||
+        (doc.is_active ? "active" : doc.application_status ? String(doc.application_status) : "pending");
+
+      const joinedDate = doc.joinedDate || doc.submitted_at || doc.created_at || doc.updated_at;
+
+      return {
+        _id: String(doc._id || ""),
+        name,
+        email,
+        businessPartnerCode,
+        pan,
+        gstin,
+        phone,
+        platform: platformOut,
+        accountStatus,
+        district,
+        state,
+        city,
+        pincode,
+        totalCustomers: doc.totalCustomers || 0,
+        totalTransactions: doc.totalTransactions || 0,
+        commissionEarned: doc.commissionEarned || 0,
+        commissionPending: doc.commissionPending || 0,
+        joinedDate,
+        createdAt: doc.created_at || doc.createdAt || null,
+      };
+    });
+
     return res.status(200).json({ territory });
   } catch (error) {
     console.error("Error fetching territory:", error);

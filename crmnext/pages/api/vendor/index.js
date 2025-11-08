@@ -1,4 +1,4 @@
-// crmnext/pages/api/vendor/index.js
+
 import Cors from "cors";
 import {
   getAllVendor,

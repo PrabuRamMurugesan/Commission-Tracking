@@ -1,29 +1,51 @@
 import Agent from "../../models/Agent/Agent.js";
 import bcrypt from "bcryptjs";
-import { connectDB } from "../../lib/db.js";
+import { getBBSliveDb } from "../../lib/db.js";
 import { validateAgentPayload } from "../../utils/validateAgent.js";
 import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js";
 
 
-// ✅ GET All Agents (optionally by franchiseeId or platform)
+const AGENTS_COLLECTION = "agents";
+
+// GET All Agents from BBSlive (optionally filter by franchiseeId or platform)
 export const getAllAgents = async (req, res) => {
   try {
-    await connectDB();
+    const db = await getBBSliveDb();
+    const col = db.collection(AGENTS_COLLECTION);
 
     const { franchiseeId, platform } = req.query;
     const filter = {};
-
     if (franchiseeId) filter.franchiseeId = franchiseeId;
     if (platform) filter.platform = platform;
 
-    const agents = await Agent.find(filter).sort({ createdAt: -1 });
+    // read raw docs from BBSlive
+    const docs = await col.find(filter).sort({ created_at: -1 }).toArray();
 
-    res.status(200).json({ agents });
+    // map BBSlive fields to UI-friendly keys
+    const agents = docs.map(d => ({
+      _id: d._id,
+      name: [d.vendor_fname, d.vendor_lname].filter(Boolean).join(" ").trim() || null,
+      email: d.email || d.outlet_email || null,
+      phone: d.outlet_contact_no || d.phone || null,
+      bpc: d.businessPartnerCode || d.bpc || null,
+      pan: d.pan_number || null,
+      gstin: d.gst_number || null,
+      platform: "BBSCART",
+      status: d.is_active ? "active" : "pending",
+      state: d.register_business_address?.state || d.outlet_location?.state || "",
+      district: d.gst_address?.district || "",
+      city: d.register_business_address?.city || d.outlet_location?.city || "",
+      pincode: d.register_business_address?.postalCode || d.outlet_location?.postalCode || "",
+      createdAt: d.created_at || null
+    }));
+
+    return res.status(200).json({ agents });
   } catch (error) {
-    console.error("Error fetching agents:", error);
-    res.status(500).json({ message: "Failed to fetch agents" });
+    console.error("Error fetching agents from BBSlive:", error);
+    return res.status(500).json({ message: "Failed to fetch agents" });
   }
 };
+
 
 // ✅ GET Single Agent by ID
 export const getAgentById = async (req, res) => {

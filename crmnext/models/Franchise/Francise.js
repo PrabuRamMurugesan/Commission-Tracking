@@ -91,4 +91,5 @@ const FranciseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.Francise || mongoose.model("Francise", FranciseSchema);
+export default mongoose.models.FranchiseHead ||
+  mongoose.model("FranchiseHead", FranciseSchema);

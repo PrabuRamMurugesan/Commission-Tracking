@@ -18,16 +18,44 @@ const AgentList = () => {
   const fetchAgents = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/api/agents", {
-        params: {
-          franchiseeId:
-            currentUser?.role === "franchise" ? currentUser.id : undefined,
+
+      // Read user from localStorage
+      const rawUser = localStorage.getItem("user");
+      let territoryId = null;
+
+      if (rawUser) {
+        try {
+          const parsed = JSON.parse(rawUser);
+          territoryId = parsed?.territoryId || null;
+        } catch (e) {
+          console.error("Failed to parse user", e);
+        }
+      }
+
+      // Build API URL & params
+      let url = "/api/agents";
+      let params = {};
+
+      // If user is a franchise → filter using franchiseeId
+      if (currentUser?.role === "franchise") {
+        params.franchiseeId = currentUser.franchiseeId;
+      }
+
+      // If user has a territoryId → override URL with territory filter
+      if (territoryId) {
+        url = `/api/agents?territoryId=${territoryId}`;
+      }
+
+      // API call
+      const res = await axios.get(url, {
+        params,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
         },
       });
-      setAgents(res.data.agents);
-      console.log(res.data.agents, "res.data.agents");
 
-      setFilteredAgents(res.data.agents);
+      setAgents(res.data.agents || res.data || []);
+      setFilteredAgents(res.data.agents || res.data || []);
       setLoading(false);
     } catch (err) {
       console.error("Error loading agents:", err);

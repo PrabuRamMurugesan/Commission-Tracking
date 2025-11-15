@@ -8,36 +8,105 @@ import ToastMessage from "../components/ToastMessage";
 import { exportAgentsToCSV } from "../utils/exportHelpers";
 import Sidebar from "../components/Sidebar";
 import { FaVenusDouble } from "react-icons/fa";
+
 const VendorList = () => {
   const [vendor, setVendor] = useState([]);
   const [filteredVendor, setFilteredVendor] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [loading, setLoading] = useState(true);
-
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const [collapsed, setCollapsed] = useState(false);
 
   const fetchVendor = async () => {
     try {
       setLoading(true);
+
+      // Read current user fresh inside the function
+      let currentUser = null;
+      try {
+        const raw = localStorage.getItem("user");
+        currentUser = raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        console.error("Failed to parse current user from localStorage:", e);
+      }
+
+      if (!currentUser) {
+        console.warn("No logged-in user found in localStorage.user");
+      }
+
+      const role = (currentUser?.role || "").toLowerCase();
+
+      // Try all possible keys where franchise link could be stored
+      const franchiseId =
+        currentUser?.franchiseId ||
+        currentUser?.franchiseeId ||
+        currentUser?.franchiseLink ||
+        currentUser?.franchise ||
+        null;
+
+      // Possible keys for territory
+      const territoryId =
+        currentUser?.territoryId ||
+        currentUser?.territoryHeadId ||
+        currentUser?.territory ||
+        null;
+
+      // Possible keys for agent
+      const agentIdFromUser =
+        currentUser?.agentId || currentUser?._id || currentUser?.id || null;
+
+      const params = {};
+
+      // Franchise dashboard → all vendors under this franchise
+      if ((role === "franchise" || role === "franchisee") && franchiseId) {
+        params.franchiseeId = franchiseId;
+      }
+
+      // Territory dashboard → all vendors under this territory
+      if (
+        (role === "territory" ||
+          role === "territoryhead" ||
+          role === "territory_head") &&
+        territoryId
+      ) {
+        params.territoryId = territoryId;
+      }
+
+      // Agent dashboard → only this agent's vendors
+      if (role === "agent" && agentIdFromUser) {
+        params.agentId = agentIdFromUser;
+      }
+
+      // Debug logs so you can see what is going on
+      console.log("VendorList → currentUser:", currentUser);
+      console.log("VendorList → role:", role);
+      console.log("VendorList → axios params:", params);
+
       const res = await axios.get("/api/vendor", {
-        params: {
-          franchiseeId:
-            currentUser?.role === "franchise" ? currentUser.id : undefined,
+        params,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
         },
       });
-      setVendor(res.data.vendor);
-      setFilteredVendor(res.data.vendor);
+
+      const data = res.data?.vendor || res.data || [];
+      setVendor(data);
+      setFilteredVendor(data);
       setLoading(false);
     } catch (err) {
       console.error("Error loading Vendor:", err);
-      setToast({ show: true, message: "Failed to load Vendor", type: "error" });
+      setToast({
+        show: true,
+        message: "Failed to load Vendor",
+        type: "error",
+      });
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchVendor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddSuccess = () => {
@@ -49,7 +118,7 @@ const VendorList = () => {
     });
     setShowModal(false);
   };
-  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <>
       <div className="d-flex flex-row vw-100">
@@ -57,7 +126,7 @@ const VendorList = () => {
         <div
           className={`d-flex align-items-start justify-content-center flex-grow-1 transition-all `}
           style={{
-            width: collapsed ? "100vw" : "calc(100vw - 280px)", // adjust this width to match sidebar width
+            width: collapsed ? "100vw" : "calc(100vw - 280px)",
             margin: "4rem 0",
             transition: "all 0.3s ease-in-out",
           }}
@@ -75,7 +144,6 @@ const VendorList = () => {
                 className="fw-semibold text-dark mb-3 mx-2 d-flex align-items-center"
                 style={{ fontFamily: "'Poppins', 'Segoe UI', sans-serif" }}
               >
-                {" "}
                 <FaVenusDouble className="me-2 text-dark" />
                 Vendor List
               </h3>

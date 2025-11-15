@@ -79,11 +79,18 @@ const Sidebar = () => {
             </div>
             {dropdowns.franchise && (
               <ul className="submenu">
-                <li>
-                  <Link className="submenu-item" to="/dashboard/franchise-list">
-                    Franchise List
-                  </Link>
-                </li>
+                {/* Franchise List – ONLY VISIBLE FOR ADMIN */}
+                {role === "admin" && (
+                  <li>
+                    <Link
+                      className="submenu-item"
+                      to="/dashboard/franchise-list"
+                    >
+                      Franchise List
+                    </Link>
+                  </li>
+                )}
+
                 <li>
                   <Link className="submenu-item" to="/dashboard/agent-list">
                     Agent List
@@ -102,11 +109,7 @@ const Sidebar = () => {
                     Customer List
                   </Link>
                 </li>
-                <li>
-                  <Link className="submenu-item" to="/dashboard/cbv-list">
-                    CBV List
-                  </Link>
-                </li>
+
                 <li>
                   <Link
                     className="submenu-item"
@@ -121,7 +124,7 @@ const Sidebar = () => {
         )}
 
         {/* 🧑‍💼 Territory Head */}
-        {(role === "territory-head" || role === "admin") && (
+        {(role === "territory" || role === "admin") && (
           <li>
             <div
               className="dropdown-toggle"
@@ -247,14 +250,10 @@ const Sidebar = () => {
             </div>
             {dropdowns.customerVendorDetails && (
               <ul className="submenu">
-                <li>
-                  <Link
-                    className="submenu-item"
-                    to="/dashboard/cbv-customer-list"
-                  >
-                    Customer List
-                  </Link>
-                </li>
+                <Link className="submenu-item" to="/dashboard/cbv-list">
+                  CBV List
+                </Link>
+
                 <li>
                   <Link
                     className="submenu-item"

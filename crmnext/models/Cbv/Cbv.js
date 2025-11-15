@@ -91,4 +91,5 @@ const CbvSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.Cbv || mongoose.model("Cbv", CbvSchema);
+export default mongoose.models.CustomerVendor ||
+  mongoose.model("CustomerVendor", CbvSchema);

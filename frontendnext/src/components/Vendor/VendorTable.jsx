@@ -3,6 +3,43 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaArrowUp, FaRegEye } from "react-icons/fa";
 import { LuArrowUp10 } from "react-icons/lu";
 import { VscActivateBreakpoints } from "react-icons/vsc";
+
+// Create credentials for a Vendor (same pattern as Territory)
+async function createCredentialsForVendor(row) {
+  try {
+    const body = {
+      email: row.email,
+      name: row.name || row.contactName || "",
+      role: "vendor",
+      partnerId: row._id || row.id,
+      platform: "crm",
+      autoReset: true,
+    };
+
+    const r = await fetch("/api/partners/create-credentials", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("admintoken") || ""}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await r.json();
+
+    if (!r.ok || !data?.success) {
+      throw new Error(data?.message || "Failed to create credentials");
+    }
+
+    alert(
+      `Credentials created for ${body.email}. Reset link sent if email is configured.`
+    );
+  } catch (e) {
+    console.error(e);
+    alert(e.message || "Error");
+  }
+}
+
 const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const tableContainerRef = useRef(null);
@@ -36,8 +73,9 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
       behavior: "smooth",
     });
   };
+
   return (
-    <div className="table-responsive">
+    <div className="table-responsive position-relative">
       <div
         className="table-responsive"
         ref={tableContainerRef}
@@ -46,9 +84,9 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
           overflowY: "auto",
           maxHeight: "500px",
           overflowY: "auto",
-          overflowX: "auto", // ✅ enable x-scroll
-          WebkitOverflowScrolling: "touch", // ✅ smooth scroll for touch devices
-          cursor: "grab", // 👆 optional: shows grab cursor
+          overflowX: "auto", // enable x-scroll
+          WebkitOverflowScrolling: "touch", // smooth scroll for touch devices
+          cursor: "grab", // optional: shows grab cursor
         }}
         onMouseDown={(e) => {
           const el = e.currentTarget;
@@ -78,9 +116,11 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
           >
             <tr>
               <th>#</th>
-              <th>ID</th> <th>Name</th>
+              <th>ID</th>
+              <th>Name</th>
               <th>Email</th>
-              <td>BPC</td> <td>PAN</td>
+              <td>BPC</td>
+              <td>PAN</td>
               <td>GSTIN</td>
               <th>Phone</th>
               <th>Platform</th>
@@ -111,43 +151,44 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
                 </td>
               </tr>
             ) : (
-              vendor.map((vendor, index) => (
-                <tr key={vendor._id}>
-                  <td>{index + 1}</td> <th>{vendor._id}</th>
-                  <td>{vendor.name}</td>
-                  <td>{vendor.email}</td>
-                  <td>{vendor.businessPartnerCode}</td>
-                  <td>{vendor.pan}</td>
-                  <td>{vendor.gstin}</td>
-                  <td>{vendor.phone}</td>
-                  <td>{vendor.platform}</td>
+              vendor.map((vendorRow, index) => (
+                <tr key={vendorRow._id}>
+                  <td>{index + 1}</td>
+                  <th>{vendorRow._id}</th>
+                  <td>{vendorRow.name}</td>
+                  <td>{vendorRow.email}</td>
+                  <td>{vendorRow.businessPartnerCode}</td>
+                  <td>{vendorRow.pan}</td>
+                  <td>{vendorRow.gstin}</td>
+                  <td>{vendorRow.phone}</td>
+                  <td>{vendorRow.platform}</td>
                   <td>
                     <span
                       className={`badge bg-${
-                        vendor.accountStatus === "active"
+                        vendorRow.accountStatus === "active"
                           ? "success"
                           : "secondary"
                       }`}
                     >
-                      {vendor.accountStatus}
+                      {vendorRow.accountStatus}
                     </span>
                   </td>
-                  <td>{vendor.district}</td>
-                  <td>{vendor.state}</td>
-                  <td>{vendor.city}</td>
-                  <td>{vendor.pincode}</td>
-                  <td>{vendor.totalCustomers || 0}</td>
-                  <td>{vendor.totalTransactions || 0}</td>
-                  <td>₹{vendor.commissionEarned || 0}</td>
-                  <td>₹{vendor.commissionPending || 0}</td>
+                  <td>{vendorRow.district}</td>
+                  <td>{vendorRow.state}</td>
+                  <td>{vendorRow.city}</td>
+                  <td>{vendorRow.pincode}</td>
+                  <td>{vendorRow.totalCustomers || 0}</td>
+                  <td>{vendorRow.totalTransactions || 0}</td>
+                  <td>₹{vendorRow.commissionEarned || 0}</td>
+                  <td>₹{vendorRow.commissionPending || 0}</td>
                   <td>
                     {new Date(
-                      vendor.joinedDate || vendor.createdAt
+                      vendorRow.joinedDate || vendorRow.createdAt
                     ).toLocaleDateString()}
                   </td>
                   <td>
                     <div
-                      className="btn-group btn-group-sm d-flex justify-content-center  gap-2 text-center"
+                      className="btn-group btn-group-sm d-flex justify-content-center gap-2 text-center"
                       role="group"
                       aria-label="Actions"
                     >
@@ -161,6 +202,12 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
                         <VscActivateBreakpoints className="text-danger" />{" "}
                         Deactivate
                       </button>
+                      <button
+                        className="btn btn-outline-primary d-flex align-items-center gap-1 px-2 py-1"
+                        onClick={() => createCredentialsForVendor(vendorRow)}
+                      >
+                        Create credentials
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -169,7 +216,7 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
           </tbody>
         </table>
       </div>
-      {/* Scroll to Top Button */}
+
       {showScrollTop && (
         <button
           onClick={scrollToTop}

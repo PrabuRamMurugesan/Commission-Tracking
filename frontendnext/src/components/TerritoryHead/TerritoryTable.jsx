@@ -15,6 +15,38 @@ const TerritoryTable = ({ territory, loading, refreshList, setToast }) => {
       setShowScrollTop(false);
     }
   };
+async function createCredentialsForTerritory(row) {
+   try {
+     const body = {
+       email: row.email,
+       name: row.name || row.contactName || "",
+       role: "territory",
+       partnerId: row._id || row.id,
+       platform: "crm",
+       autoReset: true,
+     };
+
+     const r = await fetch("/api/partners/create-credentials", {
+       method: "POST",
+       headers: {
+         "content-type": "application/json",
+         Authorization: `Bearer ${localStorage.getItem("admintoken") || ""}`,
+       },
+       body: JSON.stringify(body),
+     });
+     const data = await r.json();
+     if (!r.ok || !data?.success) {
+       throw new Error(data?.message || "Failed to create credentials");
+     }
+
+     alert(
+       `Credentials created for ${body.email}. Reset link sent if email is configured.`
+     );
+   } catch (e) {
+     console.error(e);
+     alert(e.message || "Error");
+   }
+}
 
   // Attach scroll listener
   useEffect(() => {
@@ -163,6 +195,11 @@ const TerritoryTable = ({ territory, loading, refreshList, setToast }) => {
                       <button className="btn btn-outline-danger d-flex align-items-center gap-1 px-2 py-1">
                         <VscActivateBreakpoints className="text-danger" />{" "}
                         Deactivate
+                      </button>
+                      <button
+                        onClick={() => createCredentialsForTerritory(territory)}
+                      >
+                        Create credentials
                       </button>
                     </div>
                   </td>

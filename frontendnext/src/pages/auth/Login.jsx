@@ -27,7 +27,7 @@ const LoginPage = () => {
       if (role === "franchise") navigate("/dashboard/franchise/");
       else if (role === "agent") navigate("/dashboard/agent");
       else if (role === "vendor") navigate("/dashboard");
-      else if (role === "territory-head") navigate("/dashboard/territory");
+      else if (role === "territory") navigate("/dashboard/territory");
       else if (role === "customer-become-vendor")
         navigate("/dashboard/customer-become-vendor");
       else if (role === "admin") navigate("/dashboard");

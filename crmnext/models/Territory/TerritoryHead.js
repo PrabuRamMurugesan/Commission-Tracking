@@ -91,4 +91,5 @@ const TerritorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.Territory || mongoose.model("Territory", TerritorySchema);
+export default mongoose.models.TerritoryHead ||
+  mongoose.model("TerritoryHead", TerritorySchema);

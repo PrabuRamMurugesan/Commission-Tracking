@@ -4,6 +4,42 @@ import { FaArrowUp, FaRegEye } from "react-icons/fa";
 import { LuArrowUp10 } from "react-icons/lu";
 import { VscActivateBreakpoints } from "react-icons/vsc";
 
+// Create credentials for an Agent (same pattern as Territory)
+async function createCredentialsForAgent(row) {
+  try {
+    const body = {
+      email: row.email,
+      name: row.name || row.contactName || "",
+      role: "agent",
+      partnerId: row._id || row.id,
+      platform: "crm",
+      autoReset: true,
+    };
+
+    const r = await fetch("/api/partners/create-credentials", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("admintoken") || ""}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await r.json();
+
+    if (!r.ok || !data?.success) {
+      throw new Error(data?.message || "Failed to create credentials");
+    }
+
+    alert(
+      `Credentials created for ${body.email}. Reset link sent if email is configured.`
+    );
+  } catch (e) {
+    console.error(e);
+    alert(e.message || "Error");
+  }
+}
+
 const AgentTable = ({ agents, loading, refreshList, setToast }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const tableContainerRef = useRef(null);
@@ -37,6 +73,7 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
       behavior: "smooth",
     });
   };
+
   return (
     <div className="position-relative">
       <div
@@ -47,9 +84,9 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
           overflowY: "auto",
           maxHeight: "500px",
           overflowY: "auto",
-          overflowX: "auto", // ✅ enable x-scroll
-          WebkitOverflowScrolling: "touch", // ✅ smooth scroll for touch devices
-          cursor: "grab", // 👆 optional: shows grab cursor
+          overflowX: "auto", // enable x-scroll
+          WebkitOverflowScrolling: "touch", // smooth scroll for touch devices
+          cursor: "grab", // optional: shows grab cursor
         }}
         onMouseDown={(e) => {
           const el = e.currentTarget;
@@ -87,7 +124,6 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
               <td>GSTIN</td>
               <th>Phone</th>
               <th>Platform</th>
-
               <th>Status</th>
               <th>District</th>
               <th>State</th>
@@ -137,7 +173,6 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
                       {agent.accountStatus}
                     </span>
                   </td>
-
                   <td>{agent.district}</td>
                   <td>{agent.state}</td>
                   <td>{agent.city}</td>
@@ -153,7 +188,7 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
                   </td>
                   <td>
                     <div
-                      className="btn-group btn-group-sm d-flex justify-content-center  gap-2 text-center"
+                      className="btn-group btn-group-sm d-flex justify-content-center gap-2 text-center"
                       role="group"
                       aria-label="Actions"
                     >
@@ -167,6 +202,12 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
                         <VscActivateBreakpoints className="text-danger" />{" "}
                         Deactivate
                       </button>
+                      <button
+                        className="btn btn-outline-primary d-flex align-items-center gap-1 px-2 py-1"
+                        onClick={() => createCredentialsForAgent(agent)}
+                      >
+                        Create credentials
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -175,6 +216,22 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
           </tbody>
         </table>
       </div>
+
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="btn btn-dark rounded-circle shadow position-absolute d-flex align-items-center justify-content-center "
+          style={{
+            bottom: "20px",
+            right: "20px",
+            width: "40px",
+            height: "40px",
+            zIndex: 10,
+          }}
+        >
+          <FaArrowUp />
+        </button>
+      )}
     </div>
   );
 };

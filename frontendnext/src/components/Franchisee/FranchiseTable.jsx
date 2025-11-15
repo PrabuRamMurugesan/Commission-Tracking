@@ -15,6 +15,59 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
       setShowScrollTop(false);
     }
   };
+const onCreateCredentials = async (agent) => {
+  try {
+    const partnerId = agent?._id;
+    const email = agent?.email;
+    const name = agent?.name || "Franchise";
+    if (!partnerId || !email) {
+      return setToast?.({
+        show: true,
+        type: "error",
+        message: "Missing partnerId or email",
+      });
+    }
+
+    // get the admin JWT you already store on login
+const token =
+  localStorage.getItem("authToken") || // primary (what you have now)
+  localStorage.getItem("token") || // fallback if some pages used 'token'
+  "";
+ const bearer = token.replace(/^"+|"+$/g, "");
+ if (!bearer) {
+   return setToast?.({
+     show: true,
+     type: "error",
+     message: "Not logged in. Please sign in as Admin.",
+   });
+ }
+    const r = await fetch("/api/partners/create-credentials", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${bearer}`, // << forward admin JWT to CRM API
+      },
+      body: JSON.stringify({
+        partnerId,
+        email,
+        name,
+        role: "franchise",
+        platform: "BBSCART",
+      }),
+    });
+
+    const data = await r.json();
+    if (!r.ok) throw new Error(data?.message || "Failed");
+    setToast?.({
+      show: true,
+      type: "success",
+      message: data?.message || "Reset link sent",
+    });
+  } catch (e) {
+    console.error("[onCreateCredentials]", e);
+    setToast?.({ show: true, type: "error", message: e.message || "Error" });
+  }
+};
 
   // Attach scroll listener
   useEffect(() => {
@@ -167,6 +220,12 @@ const FranciseTable = ({ francise, loading, refreshList, setToast }) => {
                       <button className="btn btn-outline-danger d-flex align-items-center gap-1 px-2 py-1">
                         <VscActivateBreakpoints className="text-danger" />{" "}
                         Deactivate
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={() => onCreateCredentials(agent)}
+                      >
+                        Create credentials
                       </button>
                     </div>
                   </td>

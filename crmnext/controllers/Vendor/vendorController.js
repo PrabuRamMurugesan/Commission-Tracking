@@ -5,59 +5,37 @@ import { validateVendorPayload } from "../../utils/validateVendor.js";
 import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js";
 
 // ✅ GET All vendor (role-aware via query: franchiseeId / territoryId / agentId / platform)
+// ✅ GET All vendor (optionally by franchiseeId, platform, or single vendor for vendor dashboard)
 export const getAllVendor = async (req, res) => {
   try {
     await connectDB();
 
-    // Read all possible filters coming from CRM
-    let {
-      franchiseeId,
-      franchiseId, // alias, in case frontend sends this
-      territoryId,
-      agentId,
-      platform,
-    } = req.query || {};
-
+    const { franchiseeId, platform, role, userId, vendorId } = req.query;
     const filter = {};
 
-    // Normalize: if franchiseeId is empty but franchiseId exists, use that
-    if (!franchiseeId && franchiseId) {
-      franchiseeId = franchiseId;
+    // For admin / franchise views
+    if (franchiseeId) filter.franchiseeId = franchiseeId;
+    if (platform) filter.platform = platform;
+
+    // Direct vendorId filter (if passed explicitly)
+    if (vendorId) {
+      filter._id = vendorId;
     }
 
-    // Hierarchy filters
-
-    // Franchise dashboard → vendors under this franchise
-    if (franchiseeId) {
-      filter.franchiseeId = franchiseeId;
+    // Vendor dashboard case:
+    // if role=vendor and userId is sent, restrict to that vendor only
+    if (!vendorId && role === "vendor" && userId) {
+      filter._id = userId;
     }
 
-    // Territory dashboard → vendors under this territory (if you store this in Vendor)
-    if (territoryId) {
-      filter.franchiseeId = territoryId;
-    }
-
-    // Agent dashboard → vendors under this agent (if you store this in Vendor)
-    if (agentId) {
-      filter.franchiseeId = agentId;
-    }
-
-    // Optional: platform filter (e.g., "BBSCART")
-    if (platform) {
-      filter.platform = platform;
-    }
-
-    // If no filter keys at all → admin/company: show all vendors
-    const hasAnyFilter = Object.keys(filter).length > 0;
-
-    const vendor = hasAnyFilter
-      ? await Vendor.find(filter).sort({ createdAt: -1 })
-      : await Vendor.find({}).sort({ createdAt: -1 });
+    const vendor = await Vendor.find(filter).sort({ createdAt: -1 });
 
     res.status(200).json({ vendor });
   } catch (error) {
     console.error("Error fetching vendor:", error);
-    res.status(500).json({ message: "Failed to fetch vendor" });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch vendor" });
   }
 };
 

@@ -1,9 +1,9 @@
 import Cors from "cors";
 import jwt from "jsonwebtoken";
 import dbConnect from "../../../lib/mongodb";
-import { getCustomersByRole } from "../../../controllers/common/getCustomersByRole";
+import { getFilteredCustomersFromBBSlive } from "../../../controllers/Customer/customerController";
 
-// 1) CORS config
+// CORS config
 const cors = Cors({
   origin: "http://localhost:5174",
   methods: ["GET", "OPTIONS"],
@@ -20,24 +20,24 @@ function runMiddleware(req, res, fn) {
 export default async function handler(req, res) {
   const { role: queryRole, userId: queryUserId } = req.query;
 
-  // connect to Mongo
+  // 1) DB
   await dbConnect();
 
-  // run CORS on all requests
+  // 2) CORS
   await runMiddleware(req, res, cors);
 
-  // preflight
+  // 3) Preflight
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // only GET for this route
+  // 4) Only GET allowed
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET,OPTIONS");
     return res.status(405).end("Method Not Allowed");
   }
 
-  // auth
+  // 5) Auth
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -50,8 +50,13 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: "Invalid token" });
   }
 
-  // role guard
-  const user = { _id: payload._id, role: payload.role };
+  // 6) User info from token
+  const user = {
+    _id: payload._id,
+    role: payload.role,
+    vendorId: payload.vendorId, // if you added this to the token
+  };
+
   const ALLOWED = [
     "admin",
     "territory-head",
@@ -60,21 +65,31 @@ export default async function handler(req, res) {
     "vendor",
     "cbv",
     "franchise",
+    "logistics-partner",
+    "health-partner",
   ];
   if (!ALLOWED.includes(user.role)) {
     return res.status(403).json({ message: "Forbidden" });
   }
 
-  // fetch & return
-  try {
-    const customers = await getCustomersByRole({
-      _id: queryUserId || user._id,
-      role: queryRole || user.role,
-    });
-    console.log("🍪 filtered response:", customers);
-    return res.status(200).json({ customers });
-  } catch (err) {
-    console.error("Error in filtered API:", err);
-    return res.status(500).json({ message: "Server error" });
+  // 7) Decide effective role and userId for filtering
+  const effectiveRole = queryRole || user.role;
+  let effectiveUserId = queryUserId || "";
+
+  if (!effectiveUserId) {
+    if (effectiveRole === "vendor" && user.vendorId) {
+      // Vendor dashboard should use BBSCART vendorId
+      effectiveUserId = user.vendorId;
+    } else {
+      // For admin, territory-head, franchisee, agent, etc
+      effectiveUserId = user._id;
+    }
   }
+
+  // Make sure controller sees the final values
+  req.query.role = effectiveRole;
+  req.query.userId = effectiveUserId;
+
+  // 8) Delegate to the BBSlive-based controller
+  return getFilteredCustomersFromBBSlive(req, res);
 }

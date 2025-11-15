@@ -25,7 +25,6 @@ const CustomerList = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const API = import.meta.env.VITE_API_URL;
       const token = localStorage.getItem("authToken");
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -35,7 +34,7 @@ const CustomerList = () => {
       console.log("🔍 Role:", role);
       console.log("🔍 User ID:", userId);
 
-      const res = await axios.get(`${API}/api/customers/filtered`, {
+      const res = await axios.get(`/api/customers/filtered`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

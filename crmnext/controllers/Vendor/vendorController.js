@@ -4,18 +4,55 @@ import { connectDB } from "../../lib/db.js";
 import { validateVendorPayload } from "../../utils/validateVendor.js";
 import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js";
 
-// ✅ GET All vendor (optionally by franchiseeId or platform)
+// ✅ GET All vendor (role-aware via query: franchiseeId / territoryId / agentId / platform)
 export const getAllVendor = async (req, res) => {
   try {
     await connectDB();
 
-    const { franchiseeId, platform } = req.query;
+    // Read all possible filters coming from CRM
+    let {
+      franchiseeId,
+      franchiseId, // alias, in case frontend sends this
+      territoryId,
+      agentId,
+      platform,
+    } = req.query || {};
+
     const filter = {};
 
-    if (franchiseeId) filter.franchiseeId = franchiseeId;
-    if (platform) filter.platform = platform;
+    // Normalize: if franchiseeId is empty but franchiseId exists, use that
+    if (!franchiseeId && franchiseId) {
+      franchiseeId = franchiseId;
+    }
 
-    const vendor = await Vendor.find(filter).sort({ createdAt: -1 });
+    // Hierarchy filters
+
+    // Franchise dashboard → vendors under this franchise
+    if (franchiseeId) {
+      filter.franchiseeId = franchiseeId;
+    }
+
+    // Territory dashboard → vendors under this territory (if you store this in Vendor)
+    if (territoryId) {
+      filter.franchiseeId = territoryId;
+    }
+
+    // Agent dashboard → vendors under this agent (if you store this in Vendor)
+    if (agentId) {
+      filter.franchiseeId = agentId;
+    }
+
+    // Optional: platform filter (e.g., "BBSCART")
+    if (platform) {
+      filter.platform = platform;
+    }
+
+    // If no filter keys at all → admin/company: show all vendors
+    const hasAnyFilter = Object.keys(filter).length > 0;
+
+    const vendor = hasAnyFilter
+      ? await Vendor.find(filter).sort({ createdAt: -1 })
+      : await Vendor.find({}).sort({ createdAt: -1 });
 
     res.status(200).json({ vendor });
   } catch (error) {
@@ -60,7 +97,8 @@ export const createVendor = async (req, res) => {
       stateCode,
       cityCode,
     } = req.body;
-  // ✅ Generate BPC properly here
+
+    // ✅ Generate BPC properly here
     const count = await Vendor.countDocuments({ stateCode, cityCode });
 
     const bpc = generateLocationPartnerCode({

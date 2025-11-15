@@ -7,7 +7,15 @@ const UserSchema = new mongoose.Schema(
     email: String,
     role: {
       type: String,
-      enum: ["admin", "vendor", "franchisee", "agent", "cbav", "customer"],
+      enum: [
+        "admin",
+        "vendor",
+        "franchisee",
+        "territory",
+        "agent",
+        "cbav",
+        "customer",
+      ],
     },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     password: String,
@@ -15,6 +23,26 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "submitted", "verified", "rejected"],
       default: "pending",
+    },
+    franchiseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "FranchiseHead",
+      default: null,
+    },
+    territoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TerritoryHead",
+      default: null,
+    },
+    agentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Agent",
+      default: null,
+    },
+    vendorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vendor",
+      default: null,
     },
     kycDocs: [
       {

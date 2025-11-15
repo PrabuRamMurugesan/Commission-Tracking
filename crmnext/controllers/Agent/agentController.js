@@ -10,10 +10,18 @@ export const getAllAgents = async (req, res) => {
   try {
     await connectDB();
 
-    const { franchiseeId, platform } = req.query;
+    const { franchiseeId, platform, territoryId } = req.query;
     const filter = {};
 
     if (franchiseeId) filter.franchiseeId = franchiseeId;
+    if (territoryId) {
+      // agents linked to territory head
+      filter.franchiseeId = territoryId;
+    } else if (franchiseeId) {
+      // agents linked to franchise
+      filter.franchiseeId = franchiseeId;
+    }
+    
     if (platform) filter.platform = platform;
 
     const agents = await Agent.find(filter).sort({ createdAt: -1 });

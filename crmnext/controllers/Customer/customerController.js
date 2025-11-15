@@ -5,7 +5,7 @@ import { validateCustomerPayload } from "../../utils/validateCustomer.js";
 import Agent from "../../models/Agent/Agent.js";
 import Vendor from "../../models/Vendor.js";
 import Cbv from "../../models/Cbv/Cbv.js";
-import Franchise from "../../models/Franchise/Franchise.js";
+import Franchise from "../../models/Franchise/Francise.js";
 import Territory from "../../models/Territory/TerritoryHead.js";
 
 export const getAllCustomers = async (req, res) => {

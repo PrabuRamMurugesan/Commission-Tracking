@@ -1,113 +1,133 @@
-// src/pages/HealthcareFilterBar.jsx
-import React, { useState } from "react";
+// src/components/Healthcare/HealthcareFilterBar.jsx
 
-const HealthcareFilterBar = ({ healthcare = [], setFilteredHealthcare }) => {
+import React, { useState, useEffect } from "react";
+
+const HealthcareFilterBar = ({ partners, setFilteredPartners }) => {
   const [search, setSearch] = useState("");
-  const [city, setCity] = useState("");
-  const [type, setType] = useState("");
-  const [status, setStatus] = useState("");
+  const [district, setDistrict] = useState("");
+  const [state, setState] = useState("");
+  const [clinicType, setClinicType] = useState("");
 
-  // ✅ Extract unique filter options safely
-  const uniqueCities = [...new Set(healthcare.map((h) => h.city).filter(Boolean))];
-  const uniqueTypes = [...new Set(healthcare.map((h) => h.type).filter(Boolean))];
+  // Auto generate dropdown options based on existing data
+  const districtOptions = [
+    ...new Set(partners.map((p) => p.district).filter(Boolean)),
+  ];
+  const stateOptions = [
+    ...new Set(partners.map((p) => p.state).filter(Boolean)),
+  ];
+  const clinicTypeOptions = [
+    ...new Set(partners.map((p) => p.clinicType).filter(Boolean)),
+  ];
 
-  const handleFilter = () => {
-    let filtered = [...healthcare];
+  const applyFilters = () => {
+    let filtered = partners;
 
-    if (search) {
+    if (search.trim() !== "") {
       filtered = filtered.filter(
-        (item) =>
-          item.name?.toLowerCase().includes(search.toLowerCase()) ||
-          item.email?.toLowerCase().includes(search.toLowerCase()) ||
-          item.contact?.includes(search)
+        (p) =>
+          (p.fullName || "").toLowerCase().includes(search.toLowerCase()) ||
+          (p.email || "").toLowerCase().includes(search.toLowerCase()) ||
+          (p.phone || "").toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    if (city) {
-      filtered = filtered.filter((item) => item.city === city);
+    if (district) {
+      filtered = filtered.filter((p) => p.district === district);
     }
 
-    if (type) {
-      filtered = filtered.filter((item) => item.type === type);
+    if (state) {
+      filtered = filtered.filter((p) => p.state === state);
     }
 
-    if (status) {
-      filtered = filtered.filter(
-        (item) => item.status?.toLowerCase() === status.toLowerCase()
-      );
+    if (clinicType) {
+      filtered = filtered.filter((p) => p.clinicType === clinicType);
     }
 
-    setFilteredHealthcare(filtered);
+    setFilteredPartners(filtered);
+  };
+
+  const resetFilters = () => {
+    setSearch("");
+    setDistrict("");
+    setState("");
+    setClinicType("");
+    setFilteredPartners(partners);
   };
 
   return (
-    <div className="border rounded-3 mb-4 bg-white shadow-sm p-4">
-      <div className="d-flex flex-row align-items-center justify-content-between gap-3 flex-wrap">
-        {/* Search bar */}
-        <div className="col-md-3 mb-2">
+    <div className="border rounded p-3 mb-3 shadow-sm bg-light">
+      <div className="row g-3 align-items-end">
+        {/* Search */}
+        <div className="col-md-4">
+          <label className="form-label fw-semibold">Search</label>
           <input
             type="text"
-            className="form-control border-start-2"
-            placeholder="Search name | email | contact"
-            style={{ borderRadius: "10px", width: "250px" }}
+            className="form-control"
+            placeholder="Search by name, email, phone"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        {/* City filter */}
-        <div className="col-md-2 mb-2">
+        {/* District */}
+        <div className="col-md-3">
+          <label className="form-label fw-semibold">District</label>
           <select
-            className="form-select border-start-2"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
+            className="form-control"
+            value={district}
+            onChange={(e) => setDistrict(e.target.value)}
           >
-            <option value="">All Cities</option>
-            {uniqueCities.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            <option value="">All Districts</option>
+            {districtOptions.map((d, i) => (
+              <option key={i} value={d}>
+                {d}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Type filter (e.g., Hospital, Clinic, Pharmacy) */}
-        <div className="col-md-2 mb-2">
+        {/* State */}
+        <div className="col-md-3">
+          <label className="form-label fw-semibold">State</label>
           <select
-            className="form-select border-start-2"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
+            className="form-control"
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+          >
+            <option value="">All States</option>
+            {stateOptions.map((s, i) => (
+              <option key={i} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Clinic Type */}
+        <div className="col-md-2">
+          <label className="form-label fw-semibold">Clinic Type</label>
+          <select
+            className="form-control"
+            value={clinicType}
+            onChange={(e) => setClinicType(e.target.value)}
           >
             <option value="">All Types</option>
-            {uniqueTypes.map((t) => (
-              <option key={t} value={t}>
+            {clinicTypeOptions.map((t, i) => (
+              <option key={i} value={t}>
                 {t}
               </option>
             ))}
           </select>
         </div>
-
-        {/* Status filter */}
-        <div className="col-md-2 mb-2">
-          <select
-            className="form-select border-start-2"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="pending">Pending</option>
-          </select>
-        </div>
       </div>
 
-      {/* Filter button */}
-      <div className="col-md-5 mb-2 d-flex flex-row align-items-center justify-content-center w-100 mt-3">
-        <button
-          className="btn btn-secondary w-100 border-start-0"
-          onClick={handleFilter}
-        >
+      {/* Buttons */}
+      <div className="d-flex justify-content-end gap-3 mt-3">
+        <button className="btn btn-outline-secondary" onClick={resetFilters}>
+          Reset
+        </button>
+
+        <button className="btn btn-dark" onClick={applyFilters}>
           Apply Filters
         </button>
       </div>

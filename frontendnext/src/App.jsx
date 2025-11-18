@@ -146,6 +146,7 @@ import RotationManager from "./pages/admin/RotationManager";
 import TodayVendorViewer from "./pages/admin/TodayVendorViewer";
 import DeliveryList from "./components/delivery/Delivery";
 import HealthcareList from "./components/healthcarePartner/Healthcare";
+import MyBeneficiaries from "./components/beneficiaries/MyBeneficiaries";
 
 
 function App() {
@@ -286,6 +287,10 @@ function App() {
             <Route
               path="/dashboard/healthcare-list"
               element={<HealthcareList />} //Done this
+            />
+            <Route
+              path="/dashboard/my-beneficiaries"
+              element={<MyBeneficiaries />} //Done this
             />
             <Route
               path="/dashboard/franchise-list"

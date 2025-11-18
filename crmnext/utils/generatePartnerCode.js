@@ -1,4 +1,6 @@
 // utils/generatePartnerCode.js
+import HealthcarePartner from "../models/HealthcarePartner";
+
 export function generateLocationPartnerCode({
   role,
   stateCode,
@@ -25,4 +27,21 @@ export function generateLocationPartnerCode({
   const serial = String(count + 1).padStart(3, "0");
 
   return `${rolePrefix}${stateCode}${cityCode}${mmYY}${serial}`;
+}
+export async function generatePartnerCode(state, city) {
+  const prefix = "HP";
+
+  const stateCode = state ? state.substring(0, 2).toUpperCase() : "NA";
+  const cityCode = city ? city.substring(0, 3).toUpperCase() : "CTY";
+
+  const date = new Date();
+  const dateCode = `${date.getFullYear()}${(date.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}${date.getDate().toString().padStart(2, "0")}`;
+
+  const count = await HealthcarePartner.countDocuments();
+
+  const serial = (count + 1).toString().padStart(5, "0");
+
+  return `${prefix}-${stateCode}-${cityCode}-${dateCode}-${serial}`;
 }

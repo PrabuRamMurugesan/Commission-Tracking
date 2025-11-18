@@ -1,163 +1,145 @@
-// src/pages/HealthcareList.jsx
-import React, { useEffect, useState } from "react";
+// src/pages/HealthcarePartners.jsx
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { MdDeliveryDining } from "react-icons/md";
-import Sidebar from "../Sidebar";
-import HealthcareFilterBar from "./HealthcareFilterBar";
-import HealthcareTable from "./HealthcareTable";
-import AddHealthcareModal from "./AddHealthcareModal";
 
-const HealthcareList = () => {
-  const [healthcare, setHealthcare] = useState([]);
-  const [filteredHealthcare, setFilteredHealthcare] = useState([]);
+import Sidebar from "../../components/Sidebar";
+import ToastMessage from "../../components/ToastMessage";
+
+import HealthcareFilterBar from "../../components/healthcarePartner/HealthcareFilterBar";
+import HealthcareTable from "../../components/healthcarePartner/HealthcareTable";
+import AddHealthcareModal from "../../components/healthcarePartner/AddHealthcareModal";
+
+import { FaUserNurse } from "react-icons/fa";
+
+const HealthcarePartners = () => {
+  const [partners, setPartners] = useState([]);
+  const [filteredPartners, setFilteredPartners] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
 
-  const currentUser = JSON.parse(localStorage.getItem("user"));
-
-  // ✅ Fetch healthcare list
-  const fetchHealthcare = async () => {
+  const fetchPartners = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/api/franchise", {
-        params: {
-          franchiseId:
-            currentUser?.role === "franchise" ? currentUser.id : undefined,
-        },
-      });
 
-      const data = res.data?.healthcare || [];
-      setHealthcare(data);
-      setFilteredHealthcare(data);
+      const res = await axios.get("/api/healthcare");
+      const list = res.data?.data || [];
+
+      setPartners(list);
+      setFilteredPartners(list);
+      setLoading(false);
     } catch (err) {
-      console.error("Error loading healthcare:", err);
+      console.error("Healthcare load error:", err);
       setToast({
         show: true,
-        message: "Failed to load healthcare data",
+        message: "Failed to load healthcare partners",
         type: "error",
       });
-    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchHealthcare();
+    fetchPartners();
   }, []);
 
-  // ✅ After successful add
-  const handleAddSuccess = () => {
-    fetchHealthcare();
+  const handleAdded = () => {
+    fetchPartners();
     setToast({
       show: true,
-      message: "Healthcare record saved successfully!",
+      message: "Healthcare Partner added successfully!",
       type: "success",
     });
     setShowModal(false);
   };
 
-  // ✅ CSV Export
-  const exportToCSV = (data) => {
-    if (!data || data.length === 0) {
-      alert("No data to export");
-      return;
-    }
-
-    const headers = Object.keys(data[0]);
-    const csvRows = [
-      headers.join(","), // Header row
-      ...data.map((row) =>
-        headers.map((h) => JSON.stringify(row[h] || "")).join(",")
-      ),
-    ];
-
-    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "HealthcareList.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
   return (
-    <div className="d-flex flex-row vw-100">
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+    <>
+      <div className="d-flex flex-row vw-100">
+        <Sidebar />
 
-      <div
-        className="d-flex align-items-start justify-content-center flex-grow-1 transition-all"
-        style={{
-          width: collapsed ? "100vw" : "calc(100vw - 280px)",
-          margin: "4rem 0",
-          transition: "all 0.3s ease-in-out",
-        }}
-      >
         <div
-          className="d-flex flex-column gap-3 border rounded-3 shadow-sm bg-white p-5 w-100"
+          className={`d-flex align-items-start justify-content-center flex-grow-1 transition-all`}
           style={{
-            maxWidth: "1400px",
-            minHeight: "90vh",
+            width: collapsed ? "100vw" : "calc(100vw - 280px)",
+            margin: "4rem 0",
             transition: "all 0.3s ease-in-out",
           }}
         >
-          {/* ===== Header Section ===== */}
-          <div className="d-flex justify-content-between align-items-center mb-3 px-2 flex-wrap">
-            <h3
-              className="fw-semibold text-dark d-flex align-items-center"
-              style={{ fontFamily: "'Poppins', 'Segoe UI', sans-serif" }}
-            >
-              <MdDeliveryDining size={35} className="me-2 text-dark" />
-              Healthcare Partners
-            </h3>
+          <div
+            className="d-flex flex-column gap-3 border rounded-3 shadow-sm bg-white p-5 w-100"
+            style={{
+              maxWidth: "1400px",
+              minHeight: "90vh",
+            }}
+          >
+            {/* HEADER */}
+            <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+              <h3
+                className="fw-semibold text-dark mb-3 mx-2 d-flex align-items-center"
+                style={{ fontFamily: "'Poppins', 'Segoe UI', sans-serif" }}
+              >
+                <FaUserNurse className="me-2 text-dark" />
+                Healthcare Partners
+              </h3>
 
-            <div className="d-flex gap-3">
-              <button
-                className="btn btn-outline-dark"
-                onClick={() => setShowModal(true)}
-              >
-                Add Healthcare
-              </button>
-              <button
-                className="btn btn-outline-secondary"
-                onClick={fetchHealthcare}
-              >
-                Refresh
-              </button>
-              <button
-                className="btn btn-outline-success"
-                onClick={() => exportToCSV(filteredHealthcare)}
-              >
-                Export CSV
-              </button>
+              <div className="d-flex gap-3">
+                <button
+                  className="btn btn-outline-dark"
+                  onClick={() => setShowModal(true)}
+                >
+                  Add Healthcare Partner
+                </button>
+
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={fetchPartners}
+                >
+                  Refresh
+                </button>
+              </div>
             </div>
+
+            {/* FILTER BAR */}
+            <HealthcareFilterBar
+              partners={partners}
+              setFilteredPartners={setFilteredPartners}
+            />
+
+            {/* TABLE */}
+            <HealthcareTable
+              partners={filteredPartners}
+              loading={loading}
+              refreshList={fetchPartners}
+              setToast={setToast}
+            />
+
+            {/* MODAL */}
+            <AddHealthcareModal
+              show={showModal}
+              onClose={() => setShowModal(false)}
+              onSuccess={handleAdded}
+            />
+
+            {toast.show && (
+              <ToastMessage
+                message={toast.message}
+                type={toast.type}
+                onClose={() =>
+                  setToast({
+                    show: false,
+                    message: "",
+                    type: "",
+                  })
+                }
+              />
+            )}
           </div>
-
-          {/* ===== Filter Bar ===== */}
-          <HealthcareFilterBar
-            healthcare={healthcare}
-            setFilteredHealthcare={setFilteredHealthcare}
-          />
-
-          {/* ===== Data Table ===== */}
-         <HealthcareTable
-            healthcare={filteredHealthcare}
-            setHealthcare={setHealthcare}
-            loading={loading}
-            refreshList={fetchHealthcare}
-            setToast={setToast}
-          />
-          {/* ===== Add Modal ===== */}
-         <AddHealthcareModal
-            show={showModal}
-            onClose={() => setShowModal(false)}
-            onSuccess={handleAddSuccess}
-          />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
-export default HealthcareList;
+export default HealthcarePartners;

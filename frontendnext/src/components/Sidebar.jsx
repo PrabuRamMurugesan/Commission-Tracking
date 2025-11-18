@@ -314,6 +314,22 @@ const Sidebar = () => {
                     Healthcare List
                   </Link>
                 </li>
+                {/* My Beneficiaries */}
+                <li>
+                  <Link
+                    className="submenu-item"
+                    to="/dashboard/my-beneficiaries"
+                  >
+                    My Beneficiaries
+                  </Link>
+                </li>
+
+                {/* My Customers */}
+                <li>
+                  <Link className="submenu-item" to="/dashboard/my-customers">
+                    My Customers
+                  </Link>
+                </li>
                 <li>
                   <Link
                     className="submenu-item"

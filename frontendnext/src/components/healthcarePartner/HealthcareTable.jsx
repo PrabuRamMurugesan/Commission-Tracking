@@ -1,223 +1,125 @@
-// src/pages/HealthcareList.jsx
-import React, { useState, useRef, useEffect } from "react";
-import { LuArrowUp10 } from "react-icons/lu";
-import { VscActivateBreakpoints } from "react-icons/vsc";
-import { FaArrowUp, FaRegEye } from "react-icons/fa";
+// src/components/Healthcare/HealthcareTable.jsx
 
-// ✅ Mock Data (displayed directly)
-const mockHealthcare = [
-  {
-    _id: "H001",
-    name: "MediCare Hospital",
-    email: "contact@medicare.com",
-    bpc: "BPC12345",
-    pan: "ABCDE1234F",
-    gstin: "22ABCDE1234F1Z5",
-    phone: "9876543210",
-    platform: "Online",
-    district: "Bengaluru Urban",
-    state: "Karnataka",
-    city: "Bengaluru",
-    pincode: "560001",
-    accountStatus: "active",
-    totalCustomers: 150,
-    totalTransactions: 380,
-    commissionEarned: 24500,
-    commissionPending: 3200,
-    joinedDate: "2024-05-12",
-  },
-  {
-    _id: "H002",
-    name: "Apollo Health Center",
-    email: "info@apollohealth.in",
-    bpc: "BPC67890",
-    pan: "PQRSX6789Z",
-    gstin: "29PQRSX6789Z1Z8",
-    phone: "9988776655",
-    platform: "Offline",
-    district: "Chennai",
-    state: "Tamil Nadu",
-    city: "Chennai",
-    pincode: "600001",
-    accountStatus: "inactive",
-    totalCustomers: 90,
-    totalTransactions: 200,
-    commissionEarned: 14200,
-    commissionPending: 4100,
-    joinedDate: "2023-09-20",
-  },
-];
+import React from "react";
+import { FaEdit, FaTrashAlt, FaUserNurse } from "react-icons/fa";
+import axios from "axios";
 
-const HealthcareList = () => {
-  const [healthcare, setHealthcare] = useState(mockHealthcare);
-  const [filteredHealthcare, setFilteredHealthcare] = useState(mockHealthcare);
-  const [loading, setLoading] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const tableContainerRef = useRef(null);
+const HealthcareTable = ({ partners, loading, refreshList, setToast }) => {
+  const handleDelete = async (id) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this Healthcare Partner?"
+      )
+    )
+      return;
 
-  // Scroll detection
-  const handleScroll = () => {
-    if (tableContainerRef.current?.scrollTop > 200) {
-      setShowScrollTop(true);
-    } else {
-      setShowScrollTop(false);
+    try {
+      const res = await axios.delete(`/api/healthcare/${id}`);
+
+      if (res.data.success) {
+        setToast({
+          show: true,
+          type: "success",
+          message: "Partner deleted successfully!",
+        });
+        refreshList();
+      } else {
+        setToast({
+          show: true,
+          type: "error",
+          message: res.data.error || "Failed to delete",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      setToast({
+        show: true,
+        type: "error",
+        message: "Something went wrong",
+      });
     }
   };
 
-  // Attach scroll listener
-  useEffect(() => {
-    const tableDiv = tableContainerRef.current;
-    if (tableDiv) tableDiv.addEventListener("scroll", handleScroll);
-    return () => tableDiv?.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Scroll to top
-  const scrollToTop = () => {
-    tableContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
-    <div className="container-fluid mt-5">
-      <h4 className="fw-bold mb-4">Healthcare List</h4>
+    <div className="table-responsive border rounded shadow-sm">
+      <table className="table table-hover align-middle">
+        <thead className="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Partner Code</th>
+            <th>Name</th>
+            <th>Clinic</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>City</th>
+            <th>Status</th>
+            <th className="text-center">Actions</th>
+          </tr>
+        </thead>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="position-relative">
-          <div
-            className="table-responsive border rounded shadow-sm"
-            ref={tableContainerRef}
-            style={{
-              maxHeight: "500px",
-              overflowY: "auto",
-              overflowX: "auto",
-              WebkitOverflowScrolling: "touch",
-              cursor: "grab",
-            }}
-            onMouseDown={(e) => {
-              const el = e.currentTarget;
-              let startX = e.pageX - el.offsetLeft;
-              let scrollLeft = el.scrollLeft;
+        <tbody>
+          {loading ? (
+            <tr>
+              <td colSpan="9" className="text-center py-4">
+                <div className="spinner-border text-dark"></div>
+              </td>
+            </tr>
+          ) : partners.length === 0 ? (
+            <tr>
+              <td colSpan="9" className="text-center py-4">
+                <p className="text-muted">No Healthcare Partners Found</p>
+              </td>
+            </tr>
+          ) : (
+            partners.map((p, index) => (
+              <tr key={p._id}>
+                <td>{index + 1}</td>
+                <td className="fw-semibold">{p.partnerCode || "—"}</td>
+                <td>{p.fullName || p.name || "—"}</td>
+                <td>{p.clinicName || "—"}</td>
+                <td>{p.phone || "—"}</td>
+                <td>{p.email || "—"}</td>
+                <td>{p.city || "—"}</td>
 
-              const handleMouseMove = (ev) => {
-                ev.preventDefault();
-                const x = ev.pageX - el.offsetLeft;
-                const walk = (x - startX) * 1;
-                el.scrollLeft = scrollLeft - walk;
-              };
+                <td>
+                  <span
+                    className={`badge px-3 py-2 ${
+                      p.status === "approved"
+                        ? "bg-success"
+                        : p.status === "pending"
+                        ? "bg-warning text-dark"
+                        : "bg-danger"
+                    }`}
+                  >
+                    {p.status || "pending"}
+                  </span>
+                </td>
 
-              const handleMouseUp = () => {
-                document.removeEventListener("mousemove", handleMouseMove);
-                document.removeEventListener("mouseup", handleMouseUp);
-              };
+                <td className="text-center">
+                  <div className="d-flex justify-content-center gap-3">
+                    <button
+                      className="btn btn-sm btn-outline-dark d-flex align-items-center"
+                      title="Edit"
+                    >
+                      <FaEdit size={14} />
+                    </button>
 
-              document.addEventListener("mousemove", handleMouseMove);
-              document.addEventListener("mouseup", handleMouseUp);
-            }}
-          >
-            <table className="table table-striped align-middle">
-              <thead className="table-dark"
-               style={{ position: "sticky", top: 0, zIndex: 1 }}>
-                <tr className="text-nowrap">
-                  <th>#</th>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>BPC</th>
-                  <th>PAN</th>
-                  <th>GSTIN</th>
-                  <th>Phone</th>
-                  <th>Platform</th>
-                  <th>District</th>
-                  <th>State</th>
-                  <th>City</th>
-                  <th>Pincode</th>
-                  <th>Status</th>
-                  <th>Customers</th>
-                  <th>Transactions</th>
-                  <th>Earned</th>
-                  <th>Pending</th>
-                  <th>Joined</th>
-                  <th className="text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredHealthcare.length > 0 ? (
-                  filteredHealthcare.map((item, index) => (
-                    <tr className="text-nowrap" key={item._id || index}>
-                      <td>{index + 1}</td>
-                      <td>{item._id || "—"}</td>
-                      <td>{item.name || "—"}</td>
-                      <td>{item.email || "—"}</td>
-                      <td>{item.bpc || "—"}</td>
-                      <td>{item.pan || "—"}</td>
-                      <td>{item.gstin || "—"}</td>
-                      <td>{item.phone || "—"}</td>
-                      <td>{item.platform || "—"}</td>
-                      <td>{item.district || "—"}</td>
-                      <td>{item.state || "—"}</td>
-                      <td>{item.city || "—"}</td>
-                      <td>{item.pincode || "—"}</td>
-                      <td>
-                        <span
-                          className={`badge bg-${
-                            item.accountStatus === "active"
-                              ? "success"
-                              : "secondary"
-                          }`}
-                        >
-                          {item.accountStatus || "inactive"}
-                        </span>
-                      </td>
-                      <td>{item.totalCustomers || 0}</td>
-                      <td>{item.totalTransactions || 0}</td>
-                      <td>₹{item.commissionEarned || 0}</td>
-                      <td>₹{item.commissionPending || 0}</td>
-                      <td>
-                        {item.joinedDate || item.createdAt
-                          ? new Date(
-                              item.joinedDate || item.createdAt
-                            ).toLocaleDateString()
-                          : "—"}
-                      </td>
-                      <td>
-                        <div className="d-flex justify-content-center gap-2">
-                          <button className="btn btn-outline-dark btn-sm d-flex align-items-center gap-1">
-                            <FaRegEye /> View
-                          </button>
-                          <button className="btn btn-outline-success btn-sm d-flex align-items-center gap-1">
-                            <LuArrowUp10 /> Promote
-                          </button>
-                          <button className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
-                            <VscActivateBreakpoints /> Deactivate
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="20" className="text-center py-4 text-muted">
-                      No healthcare records found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {showScrollTop && (
-            <button
-              onClick={scrollToTop}
-              className="btn btn-dark position-absolute end-0 bottom-0 m-3 rounded-circle shadow"
-            >
-              <FaArrowUp />
-            </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger d-flex align-items-center"
+                      onClick={() => handleDelete(p._id)}
+                      title="Delete"
+                    >
+                      <FaTrashAlt size={14} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
           )}
-        </div>
-      )}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-export default HealthcareList;
+export default HealthcareTable;

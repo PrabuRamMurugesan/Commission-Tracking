@@ -15,10 +15,11 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axiosInstance.post(
-        `${VITE_API_URL}/api/auth/login`,
-        { email, password }
-      );
+      const { data } = await axiosInstance.post("/auth/login", {
+        email,
+        password,
+      });
+
 
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("authToken", data.token);

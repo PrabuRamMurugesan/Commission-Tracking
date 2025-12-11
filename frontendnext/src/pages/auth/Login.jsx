@@ -16,7 +16,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const { data } = await axiosInstance.post(
-        "http://localhost:3000/api/auth/login",
+        `${VITE_API_URL}/api/auth/login`,
         { email, password }
       );
 

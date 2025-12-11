@@ -34,10 +34,7 @@ function SignupPage() {
     }
 
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/signup",
-        formData
-      );
+     const res = await axiosInstance.post("/auth/signup", formData);
 
       console.log(res, "response data");
 

@@ -34,7 +34,10 @@ function SignupPage() {
     }
 
     try {
-     const res = await axiosInstance.post("/auth/signup", formData);
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/signup`,
+        formData
+      );
 
       console.log(res, "response data");
 

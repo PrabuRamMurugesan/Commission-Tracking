@@ -1,5 +1,5 @@
-import dbConnect from "../../../utils/dbConnect";
-import AgentTransactions from "../../../models/AgentTransactions";
+import dbConnect from "../../utils/dbConnect";
+import AgentTransactions from "../../models/AgentTransactions";
 
 export default async function handler(req, res) {
   await dbConnect(); // Ensure Database Connection

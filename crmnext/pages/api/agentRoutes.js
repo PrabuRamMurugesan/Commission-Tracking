@@ -1,4 +1,4 @@
-import dbConnect from "../../../utils/dbConnect";
+import dbConnect from "../../utils/dbConnect";
 import Vendor from "../../models/Vendor/Vendor";
 import Commission from "../../models/Commission";
 import { getAllAgents, getAgentById, createAgent, updateAgent, deleteAgent } from "../../controllers/Agent/agentController";

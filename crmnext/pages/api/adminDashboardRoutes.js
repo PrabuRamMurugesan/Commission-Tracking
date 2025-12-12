@@ -1,7 +1,7 @@
 import { connectToDatabase } from "../../lib/mongodb";
 import { ObjectId } from "mongodb";
-import dbConnect from "../../../utils/dbConnect";
-import Commission from "../../../models/Commission";
+import dbConnect from "../../utils/dbConnect";
+import Commission from "../../models/Commission";
 
 router.get('/overview', async (req, res) => {
   const { db } = await connectToDatabase();

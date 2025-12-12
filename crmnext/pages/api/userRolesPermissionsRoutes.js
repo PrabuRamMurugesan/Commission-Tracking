@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const UserRolesPermissions = require("../models/UserRolesPermissions");
+const UserRolesPermissions = require("../../models/UserRolesPermissions");
 
 // ✅ Fetch User Roles & Permissions
 router.get("/user-roles-permissions", async (req, res) => {

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const CommissionTrend = require("../models/CommissionTrend");
+const CommissionTrend = require("../../models/CommissionTrend");
 
 // ✅ Fetch Commission Trend Data
 router.get("/commission-trends", async (req, res) => {

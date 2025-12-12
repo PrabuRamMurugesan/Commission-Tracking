@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Hierarchy = require("../models/Hierarchy");
+const Hierarchy = require("../../models/Hierarchy");
 
 // ✅ Fetch Hierarchy Performance Data
 router.get("/hierarchy", async (req, res) => {

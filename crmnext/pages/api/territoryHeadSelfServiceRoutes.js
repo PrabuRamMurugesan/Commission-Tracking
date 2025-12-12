@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const TerritoryHeadTransactions = require("../models/TerritoryHeadTransactions");
+const TerritoryHeadTransactions = require("../../models/TerritoryHeadTransactions");
 
 // ✅ Fetch Territory Head Transactions
 router.get("/territory-head-transactions", async (req, res) => {

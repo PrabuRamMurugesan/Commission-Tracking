@@ -25,7 +25,29 @@ const HealthcarePartnerSchema = new mongoose.Schema(
     registrationDoc: { type: String },
 
     profilePhoto: { type: String },
+    gender: { type: String },
+    district: { type: String },
+    platform: { type: String },
+    gstin: { type: String },
 
+    registrationDocumentUrl: { type: String },
+    clinicLicenseUrl: { type: String },
+    gstCertificateUrl: { type: String },
+    aadhaarDocumentUrl: { type: String },
+
+    photos: [{ type: String }],
+
+    supportedServices: [{ type: String }],
+    supportedPlanTiers: [{ type: String }],
+
+    commissionRates: {
+      opd: { type: Number, default: 0 },
+      ipd: { type: Number, default: 0 },
+      labs: { type: Number, default: 0 }
+    },
+
+    assignedFranchiseId: { type: String },
+    assignedAgentId: { type: String },
     createdBy: { type: String }, // admin ID
     status: {
       type: String,

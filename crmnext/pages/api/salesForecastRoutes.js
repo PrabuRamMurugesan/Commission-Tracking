@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const SalesForecast = require("../models/SalesForecast");
+const SalesForecast = require("../../models/SalesForecast");
 
 // ✅ Fetch Sales Forecast Data
 router.get("/sales-forecast", async (req, res) => {

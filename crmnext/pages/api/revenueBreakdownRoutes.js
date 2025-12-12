@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const RevenueBreakdown = require("../models/RevenueBreakdown");
+const RevenueBreakdown = require("../../models/RevenueBreakdown");
 
 // ✅ Fetch Revenue Breakdown Data
 router.get("/revenue-breakdown", async (req, res) => {

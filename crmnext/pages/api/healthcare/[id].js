@@ -48,7 +48,27 @@ handler.put(async (req, res) => {
     if (req.files?.registrationDoc) {
       updateData.registrationDoc = req.files.registrationDoc[0].filename;
     }
+    if (req.files?.clinicLicenseUrl) {
+      updateData.clinicLicenseUrl = req.files.clinicLicenseUrl[0].filename;
+    }
+    if (req.files?.gstCertificateUrl) {
+      updateData.gstCertificateUrl = req.files.gstCertificateUrl[0].filename;
+    }
+    if (req.files?.aadhaarDocumentUrl) {
+      updateData.aadhaarDocumentUrl = req.files.aadhaarDocumentUrl[0].filename;
+    }
+    if (req.files?.photos) {
+      updateData.photos = req.files.photos.map(f => f.filename);
+    }
 
+    updateData.supportedServices = updateData.supportedServices?.split(",") || [];
+    updateData.supportedPlanTiers = updateData.supportedPlanTiers?.split(",") || [];
+
+    updateData.commissionRates = {
+      opd: Number(updateData.opd || 0),
+      ipd: Number(updateData.ipd || 0),
+      labs: Number(updateData.labs || 0),
+    };
     const partner = await HealthcarePartner.findByIdAndUpdate(id, updateData, {
       new: true,
     });

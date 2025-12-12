@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const UserFeedback = require("../models/UserFeedback");
+const UserFeedback = require("../../models/UserFeedback");
 
 // ✅ Fetch User Feedback
 router.get("/user-feedback", async (req, res) => {

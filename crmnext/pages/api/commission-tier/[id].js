@@ -1,5 +1,5 @@
 import connectMongo from "../../../lib/mongodb";
-import TierLevel from "../../../models/TierLevel";
+import TierLevel from "../../../models/Commission/TierLevel";
 
 export default async function handler(req, res) {
   await connectMongo();

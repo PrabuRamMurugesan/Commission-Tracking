@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const CommissionSettings = require("../models/CommissionSettings");
+const CommissionSettings = require("../../models/CommissionSettings");
 
 // ✅ Fetch Commission Settings
 router.get("/commission-settings", async (req, res) => {

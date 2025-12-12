@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const VendorTransactions = require("../models/VendorTransactions");
+const VendorTransactions = require("../../models/VendorTransactions");
 
 // ✅ Fetch Vendor Transactions
 router.get("/vendor-transactions", async (req, res) => {

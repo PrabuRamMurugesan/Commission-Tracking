@@ -52,6 +52,10 @@ const HealthcareTable = ({ partners, loading, refreshList, setToast }) => {
             <th>Phone</th>
             <th>Email</th>
             <th>City</th>
+            <th>District</th>
+            <th>Platform</th>
+            <th>GSTIN</th>
+            <th>Services</th>
             <th>Status</th>
             <th className="text-center">Actions</th>
           </tr>
@@ -80,7 +84,10 @@ const HealthcareTable = ({ partners, loading, refreshList, setToast }) => {
                 <td>{p.phone || "—"}</td>
                 <td>{p.email || "—"}</td>
                 <td>{p.city || "—"}</td>
-
+                 <td>{p.district || "—"}</td>
+                <td>{p.platform || "—"}</td>
+                 <td>{p.gstin || "—"}</td>
+                <td>+ {(p.supportedServices || []).join(", ") || "—"}+ </td>
                 <td>
                   <span
                     className={`badge px-3 py-2 ${
@@ -94,7 +101,6 @@ const HealthcareTable = ({ partners, loading, refreshList, setToast }) => {
                     {p.status || "pending"}
                   </span>
                 </td>
-
                 <td className="text-center">
                   <div className="d-flex justify-content-center gap-3">
                     <button

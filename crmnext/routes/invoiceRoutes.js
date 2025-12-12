@@ -1,6 +1,6 @@
 // routes/invoiceRoutes.js (or wherever your invoice endpoints live)
 import express from "express";
-import Escrow from "../models/Escrow";
+import Escrow from "../models/Escrow/Escrow";
 
 const router = express.Router();
 

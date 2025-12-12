@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const ReferralTransactions = require("../models/ReferralTransactions");
+const ReferralTransactions = require("../../models/ReferralTransactions");
 
 // ✅ Fetch Transactions
 router.get("/referral-transactions", async (req, res) => {

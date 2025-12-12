@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const SupportTickets = require("../models/SupportTickets");
+const SupportTickets = require("../../models/SupportTickets");
 
 // ✅ Fetch Support Tickets
 router.get("/support-tickets", async (req, res) => {

@@ -1,5 +1,5 @@
 
-import dbConnect from '../../../utils/dbconnect';
+import dbConnect from '../../../utils/dbConnect';
 import Franchisee from '../../../models/Franchise';
 import TerritoryHead from '../../../models/TerritoryHead';
 import Agent from '../../../models/Agent';

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const SalesLeaderboard = require("../models/SalesLeaderboard");
+const SalesLeaderboard = require("../../models/SalesLeaderboard");
 
 // ✅ Fetch Sales Leaderboard Data
 router.get("/sales-leaderboard", async (req, res) => {

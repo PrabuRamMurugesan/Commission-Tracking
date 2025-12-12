@@ -5,7 +5,60 @@ import axios from "axios";
 
 const AddHealthcareModal = ({ show, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
-
+const supportedServicesOptions = [
+  "OPD",
+  "IPD",
+  "Emergency",
+  "ICU",
+  "NICU",
+  "PICU",
+  "Radiology",
+  "Laboratory",
+  "Pathology",
+  "MRI",
+  "CT Scan",
+  "X-Ray",
+  "Ultrasound",
+  "Pharmacy",
+  "Teleconsultation",
+  "Physiotherapy",
+  "Dialysis",
+  "Blood Bank",
+  "Ambulance",
+  "Day Care",
+  "General Surgery",
+  "Cardiology",
+  "Neurology",
+  "Orthopedics",
+  "Pediatrics",
+  "Gynecology",
+  "Oncology",
+  "Gastroenterology",
+  "Dermatology",
+  "ENT",
+  "Pulmonology",
+  "Psychiatry",
+  "Ophthalmology",
+  "Urology",
+  "Nephrology",
+  "General Medicine",
+  "Dental",
+  "Rehab & Wellness",
+];
+const handleCheckboxArray = (fieldName, value) => {
+  setForm((prev) => {
+    const set = new Set(prev[fieldName]);
+    if (set.has(value)) {
+      set.delete(value);
+    } else {
+      set.add(value);
+    }
+    return {
+      ...prev,
+      [fieldName]: Array.from(set),
+    };
+  });
+};
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -31,6 +84,20 @@ const AddHealthcareModal = ({ show, onClose, onSuccess }) => {
     registrationDoc: null,
     clinicCertificate: null,
     idProof: null,
+        supportedServices: "",
+    supportedPlanTiers: "",
+
+    opd: "",
+    ipd: "",
+    labs: "",
+
+    assignedFranchiseId: "",
+    assignedAgentId: "",
+
+    clinicLicenseUrl: null,
+    gstCertificateUrl: null,
+    aadhaarDocumentUrl: null,
+    photos: null,
   });
 
   const handleChange = (e) => {
@@ -319,10 +386,148 @@ const AddHealthcareModal = ({ show, onClose, onSuccess }) => {
                 />
               </div>
             </div>
+            {/* ---------------------------------------- */}
+            {/* SECTION 5 – SUPPORTED SERVICES */}
+            {/* ---------------------------------------- */}
+            <h5 className="fw-bold mb-3 mt-4">Supported Services</h5>
+            <div className="card-body">
+              <label className="form-label fw-semibold">
+                Supported Services
+              </label>
+              <div className="row g-2 mb-3">
+                {supportedServicesOptions.map((svc) => (
+                  <div className="col-md-4 col-lg-3" key={svc}>
+                    <div className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id={`svc-${svc}`}
+                        checked={form.supportedServices.includes(svc)}
+                        onChange={() =>
+                          handleCheckboxArray("supportedServices", svc)
+                        }
+                      />
+                      <label
+                        className="form-check-label small"
+                        htmlFor={`svc-${svc}`}
+                      >
+                        {svc}
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-            {/* ------------------------------ */}
-            {/* SECTION 4 – DOCUMENT UPLOADS   */}
-            {/* ------------------------------ */}
+              {/* <label className="form-label fw-semibold">
+                    Supported Plan Tiers
+                  </label>
+                  <div className="d-flex flex-wrap gap-3">
+                    {planTierOptions.map((tier) => (
+                      <div className="form-check" key={tier}>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id={`tier-${tier}`}
+                          checked={form.supportedPlanTiers.includes(tier)}
+                          onChange={() =>
+                            handleCheckboxArray("supportedPlanTiers", tier)
+                          }
+                        />
+                        <label
+                          className="form-check-label small"
+                          htmlFor={`tier-${tier}`}
+                        >
+                          {tier}
+                        </label>
+                      </div>
+                    ))}
+                  </div> */}
+            </div>
+
+            {/* ---------------------------------------- */}
+            {/* SECTION 6 – SUPPORTED PLAN TIERS */}
+            {/* ---------------------------------------- */}
+            <h5 className="fw-bold mb-3 mt-4">Supported Plan Tiers</h5>
+            <div className="row g-3 mb-4">
+              <div className="col-md-12">
+                <label className="form-label">
+                  Supported Plan Tiers (comma separated)
+                </label>
+                <input
+                  name="supportedPlanTiers"
+                  className="form-control"
+                  value={form.supportedPlanTiers}
+                  onChange={handleChange}
+                  placeholder="Example: Base,Prime,Elite"
+                />
+              </div>
+            </div>
+
+            {/* ---------------------------------------- */}
+            {/* SECTION 7 – COMMISSION RATES */}
+            {/* ---------------------------------------- */}
+            <h5 className="fw-bold mb-3 mt-4">Commission Rates</h5>
+            <div className="row g-3 mb-4">
+              <div className="col-md-4">
+                <label className="form-label">OPD (%)</label>
+                <input
+                  name="opd"
+                  className="form-control"
+                  type="number"
+                  value={form.opd}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="col-md-4">
+                <label className="form-label">IPD (%)</label>
+                <input
+                  name="ipd"
+                  className="form-control"
+                  type="number"
+                  value={form.ipd}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="col-md-4">
+                <label className="form-label">Labs (%)</label>
+                <input
+                  name="labs"
+                  className="form-control"
+                  type="number"
+                  value={form.labs}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* ---------------------------------------- */}
+            {/* SECTION 8 – ASSIGNMENT */}
+            {/* ---------------------------------------- */}
+            <h5 className="fw-bold mb-3 mt-4">Assignment</h5>
+            <div className="row g-3 mb-4">
+              <div className="col-md-6">
+                <label className="form-label">Assigned Franchise ID</label>
+                <input
+                  name="assignedFranchiseId"
+                  className="form-control"
+                  value={form.assignedFranchiseId}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label">Assigned Agent ID</label>
+                <input
+                  name="assignedAgentId"
+                  className="form-control"
+                  value={form.assignedAgentId}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
             <h5 className="fw-bold mb-3">Document Uploads</h5>
 
             <div className="row g-3 mb-4">

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const MultiCurrency = require("../models/MultiCurrency");
+const MultiCurrency = require("../../models/MultiCurrency");
 
 // ✅ Fetch Supported Currencies
 router.get("/multi-currency", async (req, res) => {

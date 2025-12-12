@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const PerformanceAnalytics = require("../models/PerformanceAnalytics");
+const PerformanceAnalytics = require("../../models/PerformanceAnalytics");
 
 // ✅ Fetch Performance Analytics Data
 router.get("/performance-analytics", async (req, res) => {

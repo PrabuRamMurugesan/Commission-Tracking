@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const CommissionPayout = require("../models/CommissionPayout");
+const CommissionPayout = require("../../models/CommissionPayout");
 
 // ✅ Fetch Payout History
 router.get("/commission-payouts", async (req, res) => {

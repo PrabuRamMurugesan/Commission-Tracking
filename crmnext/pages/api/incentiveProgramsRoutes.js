@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const IncentivePrograms = require("../models/IncentivePrograms");
+const IncentivePrograms = require("../../models/IncentivePrograms");
 
 // ✅ Fetch Incentive Programs
 router.get("/incentive-programs", async (req, res) => {

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const ReferralBonuses = require("../models/ReferralBonuses");
+const ReferralBonuses = require("../../models/ReferralBonuses");
 
 // ✅ Fetch Referral Bonuses
 router.get("/referral-bonuses", async (req, res) => {

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Vendor = require("../models/Vendor");
+const Vendor = require("../../models/Vendor");
 
 // ✅ Fetch Vendors for Marketplace
 router.get("/vendors", async (req, res) => {

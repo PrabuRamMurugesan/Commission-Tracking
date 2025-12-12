@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const UserAnalytics = require("../models/UserAnalytics");
+const UserAnalytics = require("../../models/UserAnalytics");
 
 // ✅ Fetch User Analytics Data
 router.get("/user-analytics", async (req, res) => {

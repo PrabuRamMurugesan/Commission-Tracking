@@ -21,7 +21,6 @@ export default async function handler(req, res) {
     fileName = `Invoice_Export_${Date.now()}`,
     includeWatermark,
     includePlatformHeader,
-    includeSignatureSection,
     enablePageNumbers,
     notes,
     layout,

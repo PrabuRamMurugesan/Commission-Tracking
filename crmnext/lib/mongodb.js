@@ -1,6 +1,4 @@
-// lib/mongodb.js
 const mongoose = require("mongoose");
-
 const MONGO_URI = process.env.MONGODB_URI;
 
 if (!MONGO_URI) {

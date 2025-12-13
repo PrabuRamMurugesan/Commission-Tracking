@@ -1,29 +1,29 @@
-// backend/routes/api/invoice.js
+// // backend/routes/api/invoice.js
 
-const express = require("express");
-const router = express.Router();
-const {
-  createInvoice,
-  getInvoices,
-  getInvoiceById,
-  updateInvoice,
-  deleteInvoice,
-} = require("../../controllers/invoiceController");
-const { validateInvoice } = require("../../middleware/invoiceValidation");
+// const express = require("express");
+// const router = express.Router();
+// const {
+//   createInvoice,
+//   getInvoices,
+//   getInvoiceById,
+//   updateInvoice,
+//   deleteInvoice,
+// } = require("../../controllers/invoiceController");
+// const { validateInvoice } = requiare("../../middleware/invoiceValidation");
 
-// ✅ Create Invoice
-router.post("/create", validateInvoice, createInvoice);
+// // ✅ Create Invoice
+// router.post("/create", validateInvoice, createInvoice);
 
-// ✅ Get all invoices (admin / vendor-based filtering will be applied inside controller)
-router.get("/", getInvoices);
+// // ✅ Get all invoices (admin / vendor-based filtering will be applied inside controller)
+// router.get("/", getInvoices);
 
-// ✅ Get invoice by ID
-router.get("/:id", getInvoiceById);
+// // ✅ Get invoice by ID
+// router.get("/:id", getInvoiceById);
 
-// ✅ Update invoice
-router.put("/:id", validateInvoice, updateInvoice);
+// // ✅ Update invoice
+// router.put("/:id", validateInvoice, updateInvoice);
 
-// ✅ Delete invoice
-router.delete("/:id", deleteInvoice);
+// // ✅ Delete invoice
+// router.delete("/:id", deleteInvoice);
 
-module.exports = router;
+// module.exports = router;

@@ -1,5 +1,5 @@
 import connectMongo from "../../../lib/mongodb";
-import EmerJobsCommissionRule from "../../../models/EmerJobsCommissionRule";
+import EmerJobsCommissionRule from "../../../models/Commission/EmerJobsCommissionRule";
 
 export default async function handler(req, res) {
   await connectMongo();

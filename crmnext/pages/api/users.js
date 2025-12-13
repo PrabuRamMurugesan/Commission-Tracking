@@ -1,4 +1,3 @@
-const bcrypt = require("bcryptjs");
 import connectMongo from "../../lib/mongodb";
 import User from "../../models/User";
 

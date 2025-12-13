@@ -1,6 +1,5 @@
 import dbConnect from "../../../utils/dbConnect";
 import HealthcarePartner from "../../../models/HealthcarePartner";
-import nextConnect from "next-connect";
 import multer from "multer";
 import path from "path";
 import fs from "fs";

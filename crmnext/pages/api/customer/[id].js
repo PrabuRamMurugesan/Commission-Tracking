@@ -4,7 +4,7 @@ import {
   getCustomerById,
   updateCustomer,
   deleteCustomer,
-} from "../../../controllers/Customer/customerController";
+} from "../../../controllers/Customer/agentController";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {

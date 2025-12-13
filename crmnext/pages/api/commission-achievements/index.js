@@ -1,5 +1,5 @@
 import connectMongo from "../../../lib/mongodb";
-import AchievementCommission from "../../../models/Commission/AchievementCommission";
+import AchievementCommission from "../../../models/AchievementCommission";
 
 export default async function handler(req, res) {
   await connectMongo();

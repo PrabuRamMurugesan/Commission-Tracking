@@ -1,5 +1,5 @@
 import connectMongo from "../../../lib/mongodb";
-import CommissionVariableRule from "../../../models/Commission/CommissionVariableRule";
+import CommissionVariableRule from "../../../models/CommissionVariableRule";
 
 export default async function handler(req, res) {
   await connectMongo();

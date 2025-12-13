@@ -1,8 +1,8 @@
-// // routes/predictiveMarketingRoutes.js
-// const express = require("express");
-// const { getPredictiveMarketingData } = require("../controllers/predictiveMarketingController");
-// const router = express.Router();
+// routes/predictiveMarketingRoutes.js
+const express = require("express");
+const { getPredictiveMarketingData } = require("../controllers/predictiveMarketingController");
+const router = express.Router();
 
-// router.get("/", getPredictiveMarketingData);
+router.get("/", getPredictiveMarketingData);
 
-// module.exports = router;
+module.exports = router;

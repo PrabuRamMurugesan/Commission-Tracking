@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Commission Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Import Commission Data</h1>
+        <p>Upload a JSON file containing commission data to import into the database.</p>
+        
+        <form id="importForm">
+            <div class="form-group">
+                <label for="fileInput">Select JSON File:</label>
+                <input type="file" id="fileInput" accept=".json" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="clearCheckbox">
+                    Clear existing commission data before importing
+                </label>
+            </div>
+            
+            <button type="submit" id="importBtn">Import Commissions</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Importing commission data...</p>
+        </div>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('importForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const clearCheckbox = document.getElementById('clearCheckbox');
+            const importBtn = document.getElementById('importBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                alert('Please select a JSON file');
+                return;
+            }
+            
+            importBtn.disabled = true;
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            
+            try {
+                const file = fileInput.files[0];
+                const fileContent = await file.text();
+                const commissions = JSON.parse(fileContent);
+                
+                if (!Array.isArray(commissions)) {
+                    throw new Error('Invalid JSON format. Expected an array of commissions.');
+                }
+                
+                const response = await fetch('/api/reports/import-commissions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        commissions: commissions,
+                        clear: clearCheckbox.checked
+                    })
+                });
+                
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                
+                if (data.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <h3>✅ Import Successful!</h3>
+                        <p><strong>Records Imported:</strong> ${data.inserted || data.summary?.total || 0}</p>
+                        <p><strong>Total Commission Amount:</strong> ₹${(data.summary?.totalAmount || 0).toFixed(2)}</p>
+                        <p><strong>Platforms:</strong> ${(data.summary?.platforms || []).join(', ')}</p>
+                        <p><strong>Roles:</strong> ${(data.summary?.roles || []).join(', ')}</p>
+                        ${data.duplicatesSkipped ? `<p><strong>Duplicates Skipped:</strong> ${data.duplicatesSkipped}</p>` : ''}
+                    `;
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <h3>❌ Import Failed</h3>
+                        <p>${data.message || 'Unknown error occurred'}</p>
+                        ${data.error ? `<p><small>${data.error}</small></p>` : ''}
+                    `;
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p>${error.message}</p>
+                `;
+            } finally {
+                importBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

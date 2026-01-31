@@ -1,0 +1,324 @@
+{
+  "transactions": [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "date": "2024-01-15 14:30:00",
+      "orderId": "ORD-20240115-001",
+      "transactionId": "TXN-20240115-001",
+      "platform": "BBSCART",
+      "products": [
+        {
+          "title": "Gold Ring 24K",
+          "quantity": 1,
+          "price": 25000
+        },
+        {
+          "title": "Gold Chain 22K",
+          "quantity": 1,
+          "price": 15000
+        }
+      ],
+      "sellerName": "Vendor 1",
+      "sellerRole": "Vendor",
+      "buyerPhone": "9876543210",
+      "buyerName": "Customer 1",
+      "paymentStatus": "paid",
+      "orderStatus": "delivered",
+      "paymentMethod": "UPI",
+      "gstType": "CGST_SGST",
+      "cgst": 1800,
+      "sgst": 1800,
+      "igst": 0,
+      "totalGSTAmount": 3600,
+      "finalAmount": 43600,
+      "commission": "5.50",
+      "payoutStatus": "paid"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439012",
+      "date": "2024-01-16 10:15:00",
+      "orderId": "ORD-20240116-002",
+      "transactionId": "TXN-20240116-002",
+      "platform": "Golddex",
+      "products": [
+        {
+          "title": "Silver Coin Set",
+          "quantity": 2,
+          "price": 5000
+        }
+      ],
+      "sellerName": "Agent 1",
+      "sellerRole": "Agent",
+      "buyerPhone": "9876543211",
+      "buyerName": "Customer 2",
+      "paymentStatus": "escrow",
+      "orderStatus": "delivered",
+      "paymentMethod": "Wallet",
+      "gstType": "IGST",
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 1800,
+      "totalGSTAmount": 1800,
+      "finalAmount": 11800,
+      "commission": "8.00",
+      "payoutStatus": "pending"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439013",
+      "date": "2024-01-17 16:45:00",
+      "orderId": "ORD-20240117-003",
+      "transactionId": "TXN-20240117-003",
+      "platform": "Thiaworld",
+      "products": [
+        {
+          "title": "Grocery Essentials Pack",
+          "quantity": 1,
+          "price": 3500
+        },
+        {
+          "title": "Organic Vegetables",
+          "quantity": 3,
+          "price": 1200
+        }
+      ],
+      "sellerName": "CBAV 1",
+      "sellerRole": "CBAV",
+      "buyerPhone": "9876543212",
+      "buyerName": "Customer 3",
+      "paymentStatus": "paid",
+      "orderStatus": "delivered",
+      "paymentMethod": "Netbanking",
+      "gstType": "CGST_SGST",
+      "cgst": 423,
+      "sgst": 423,
+      "igst": 0,
+      "totalGSTAmount": 846,
+      "finalAmount": 5546,
+      "commission": "6.25",
+      "payoutStatus": "paid"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439014",
+      "date": "2024-01-18 11:20:00",
+      "orderId": "ORD-20240118-004",
+      "transactionId": "TXN-20240118-004",
+      "platform": "BBSCART",
+      "products": [
+        {
+          "title": "Premium Gold Necklace",
+          "quantity": 1,
+          "price": 75000
+        }
+      ],
+      "sellerName": "Franchisee 1",
+      "sellerRole": "Franchisee",
+      "buyerPhone": "9876543213",
+      "buyerName": "Customer 4",
+      "paymentStatus": "paid",
+      "orderStatus": "delivered",
+      "paymentMethod": "Razorpay",
+      "gstType": "CGST_SGST",
+      "cgst": 6750,
+      "sgst": 6750,
+      "igst": 0,
+      "totalGSTAmount": 13500,
+      "finalAmount": 88500,
+      "commission": "10.00",
+      "payoutStatus": "paid"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439015",
+      "date": "2024-01-19 09:30:00",
+      "orderId": "ORD-20240119-005",
+      "transactionId": "TXN-20240119-005",
+      "platform": "Golddex",
+      "products": [
+        {
+          "title": "Silver Jewelry Set",
+          "quantity": 1,
+          "price": 12000
+        },
+        {
+          "title": "Silver Pendant",
+          "quantity": 1,
+          "price": 3500
+        }
+      ],
+      "sellerName": "Vendor 2",
+      "sellerRole": "Vendor",
+      "buyerPhone": "9876543214",
+      "buyerName": "Customer 5",
+      "paymentStatus": "escrow",
+      "orderStatus": "delivered",
+      "paymentMethod": "COD",
+      "gstType": "IGST",
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 2790,
+      "totalGSTAmount": 2790,
+      "finalAmount": 18290,
+      "commission": "7.50",
+      "payoutStatus": "on-hold"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439016",
+      "date": "2024-01-20 13:15:00",
+      "orderId": "ORD-20240120-006",
+      "transactionId": "TXN-20240120-006",
+      "platform": "BBSCART",
+      "products": [
+        {
+          "title": "Gold Earrings 22K",
+          "quantity": 1,
+          "price": 18000
+        }
+      ],
+      "sellerName": "Agent 2",
+      "sellerRole": "Agent",
+      "buyerPhone": "9876543215",
+      "buyerName": "Customer 6",
+      "paymentStatus": "paid",
+      "orderStatus": "returned",
+      "paymentMethod": "UPI",
+      "gstType": "CGST_SGST",
+      "cgst": 1620,
+      "sgst": 1620,
+      "igst": 0,
+      "totalGSTAmount": 3240,
+      "finalAmount": 21240,
+      "commission": "4.00",
+      "payoutStatus": "pending"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439017",
+      "date": "2024-01-21 15:00:00",
+      "orderId": "ORD-20240121-007",
+      "transactionId": "TXN-20240121-007",
+      "platform": "Thiaworld",
+      "products": [
+        {
+          "title": "Fresh Fruits Basket",
+          "quantity": 1,
+          "price": 2500
+        },
+        {
+          "title": "Dairy Products Pack",
+          "quantity": 2,
+          "price": 800
+        }
+      ],
+      "sellerName": "Vendor 3",
+      "sellerRole": "Vendor",
+      "buyerPhone": "9876543216",
+      "buyerName": "Customer 7",
+      "paymentStatus": "failed",
+      "orderStatus": "cancelled",
+      "paymentMethod": "Wallet",
+      "gstType": "CGST_SGST",
+      "cgst": 369,
+      "sgst": 369,
+      "igst": 0,
+      "totalGSTAmount": 738,
+      "finalAmount": 4838,
+      "commission": "5.00",
+      "payoutStatus": "pending"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439018",
+      "date": "2024-01-22 10:45:00",
+      "orderId": "ORD-20240122-008",
+      "transactionId": "TXN-20240122-008",
+      "platform": "BBSCART",
+      "products": [
+        {
+          "title": "Platinum Ring",
+          "quantity": 1,
+          "price": 45000
+        }
+      ],
+      "sellerName": "Franchisee 2",
+      "sellerRole": "Franchisee",
+      "buyerPhone": "9876543217",
+      "buyerName": "Customer 8",
+      "paymentStatus": "paid",
+      "orderStatus": "delivered",
+      "paymentMethod": "Razorpay",
+      "gstType": "CGST_SGST",
+      "cgst": 4050,
+      "sgst": 4050,
+      "igst": 0,
+      "totalGSTAmount": 8100,
+      "finalAmount": 53100,
+      "commission": "12.00",
+      "payoutStatus": "paid"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439019",
+      "date": "2024-01-23 14:20:00",
+      "orderId": "ORD-20240123-009",
+      "transactionId": "TXN-20240123-009",
+      "platform": "Golddex",
+      "products": [
+        {
+          "title": "Gold Bracelet 18K",
+          "quantity": 1,
+          "price": 22000
+        }
+      ],
+      "sellerName": "Agent 3",
+      "sellerRole": "Agent",
+      "buyerPhone": "9876543218",
+      "buyerName": "Customer 9",
+      "paymentStatus": "paid",
+      "orderStatus": "delivered",
+      "paymentMethod": "Netbanking",
+      "gstType": "IGST",
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 3960,
+      "totalGSTAmount": 3960,
+      "finalAmount": 25960,
+      "commission": "9.00",
+      "payoutStatus": "paid"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439020",
+      "date": "2024-01-24 12:00:00",
+      "orderId": "ORD-20240124-010",
+      "transactionId": "TXN-20240124-010",
+      "platform": "Thiaworld",
+      "products": [
+        {
+          "title": "Organic Spices Pack",
+          "quantity": 1,
+          "price": 1500
+        },
+        {
+          "title": "Honey Jar",
+          "quantity": 2,
+          "price": 600
+        }
+      ],
+      "sellerName": "CBAV 2",
+      "sellerRole": "CBAV",
+      "buyerPhone": "9876543219",
+      "buyerName": "Customer 10",
+      "paymentStatus": "paid",
+      "orderStatus": "delivered",
+      "paymentMethod": "UPI",
+      "gstType": "CGST_SGST",
+      "cgst": 243,
+      "sgst": 243,
+      "igst": 0,
+      "totalGSTAmount": 486,
+      "finalAmount": 3186,
+      "commission": "6.00",
+      "payoutStatus": "paid"
+    }
+  ],
+  "summary": {
+    "orders": 10,
+    "revenue": 256820,
+    "quantity": 18
+  }
+}

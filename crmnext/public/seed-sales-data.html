@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Sales Data - CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .result.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .result.show {
+            display: block;
+        }
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Seed Sales Data</h1>
+        <p class="subtitle">Add dummy sales transactions to your CRM database</p>
+        
+        <div class="info">
+            <strong>ℹ️ Instructions:</strong><br>
+            1. Make sure your backend server is running (localhost:3000)<br>
+            2. Enter the number of records you want to generate<br>
+            3. Check "Clear existing data" if you want to replace all data<br>
+            4. Click "Seed Database" button
+        </div>
+
+        <form id="seedForm">
+            <div class="form-group">
+                <label for="count">Number of Records:</label>
+                <input 
+                    type="number" 
+                    id="count" 
+                    name="count" 
+                    value="50" 
+                    min="1" 
+                    max="1000"
+                    required
+                >
+            </div>
+            
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input 
+                        type="checkbox" 
+                        id="clear" 
+                        name="clear"
+                    >
+                    <label for="clear" style="margin: 0; cursor: pointer;">
+                        Clear existing data before inserting
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">Seed Database</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('seedForm');
+        const result = document.getElementById('result');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const count = parseInt(document.getElementById('count').value);
+            const clear = document.getElementById('clear').checked;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Seeding...';
+            result.className = 'result loading show';
+            result.innerHTML = '⏳ Seeding database, please wait...';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/reports/seed-sales-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ count, clear }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    result.className = 'result success show';
+                    result.innerHTML = `
+                        <strong>✅ Success!</strong><br><br>
+                        <strong>Records Added:</strong> ${data.count}<br>
+                        <strong>Total Orders:</strong> ${data.summary.orders}<br>
+                        <strong>Total Revenue:</strong> ₹${data.summary.revenue.toFixed(2)}<br>
+                        <strong>Total Quantity:</strong> ${data.summary.quantity}<br><br>
+                        <small>You can now view the sales report in your application!</small>
+                    `;
+                } else {
+                    result.className = 'result error show';
+                    result.innerHTML = `
+                        <strong>❌ Error:</strong><br>
+                        ${data.message || 'Failed to seed data'}
+                    `;
+                }
+            } catch (error) {
+                result.className = 'result error show';
+                result.innerHTML = `
+                    <strong>❌ Error:</strong><br>
+                    ${error.message}<br><br>
+                    <small>Make sure your backend server is running on localhost:3000</small>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Seed Database';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import {
   Modal,
   Button,
@@ -42,8 +42,8 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(
-        `/api/user?page=${page}&status=${statusFilter}&role=${roleFilter}`
+      const response = await axiosInstance.get(
+        `/user?page=${page}&status=${statusFilter}&role=${roleFilter}`
       );
       if (Array.isArray(response.data.users)) {
         setUsers(response.data.users);
@@ -86,19 +86,24 @@ const UserManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (!formData.name || !formData.email) {
+      const name = (formData.name || "").trim();
+      const email = (formData.email || "").trim();
+      if (!name || !email) {
         setToastMessage("Name and Email are required!");
         setShowToast(true);
         return;
       }
 
-      const endpoint = editUser
-        ? `http://localhost:3000/api/user/${editUser._id}`
-        : "http://localhost:3000/api/user";
-
+      const endpoint = editUser ? `/user/${editUser._id}` : "/user";
       const method = editUser ? "put" : "post";
+      const payload = {
+        name,
+        email,
+        role: formData.role || "Customer",
+        status: formData.status,
+      };
 
-      const response = await axios[method](endpoint, formData);
+      await axiosInstance[method](endpoint, payload);
 
       fetchUsers();
       handleClose();
@@ -116,7 +121,7 @@ const UserManagement = () => {
     console.log(id, "userID");
 
     try {
-      await axios.delete(`http://localhost:3000/api/user/${id}`);
+      await axiosInstance.delete(`/user/${id}`);
       fetchUsers();
       setToastMessage("User deleted successfully!");
       setShowToast(true);
@@ -129,7 +134,7 @@ const UserManagement = () => {
 
   const handleBulkDelete = async () => {
     try {
-      await axios.post(`http://localhost:3000/api/user/`, {
+      await axiosInstance.post("/user/", {
         users: selectedUsers,
       });
       fetchUsers();
@@ -346,8 +351,12 @@ const UserManagement = () => {
                 >
                   <option value="Admin">Admin</option>
                   <option value="Franchise">Franchise</option>
+                  <option value="Franchisee">Franchisee</option>
                   <option value="Agent">Agent</option>
                   <option value="Customer">Customer</option>
+                  <option value="Vendor">Vendor</option>
+                  <option value="Territory">Territory</option>
+                  <option value="CBV">CBV</option>
                 </Form.Select>
               </Form.Group>
               <Form.Group>

@@ -207,7 +207,7 @@ const SalesReportPage = () => {
       </Row>
       <Button
         variant="success"
-        onClick={() => exportSalesDataToExcel(reportData)}
+        onClick={() => exportSalesDataToExcel(salesData)}
       >
         Export Excel
       </Button>

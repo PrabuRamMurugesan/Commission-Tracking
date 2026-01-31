@@ -27,6 +27,10 @@ const TopPerformanceDashboard = () => {
   useEffect(() => {
     if (period) {
       fetchData(period);
+    } else {
+      // Reset loading state when no period is selected
+      setLoading(false);
+      setAgentData([]);
     }
   }, [period]);
 
@@ -45,19 +49,26 @@ const TopPerformanceDashboard = () => {
           <option value="" disabled>
             -- Select Period --
           </option>
-          <option value="quarterly">Weekly</option>
+          <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
           <option value="quarterly">Quarterly</option>
           <option value="half-yearly">Half-Yearly</option>
           <option value="annually">Annually</option>
         </Form.Select>
 
-        {loading ? (
-          <div className="text-center">
+        {!period ? (
+          <div className="text-center mt-4">
+            <Alert variant="info">
+              Please select a period to view top performers
+            </Alert>
+          </div>
+        ) : loading ? (
+          <div className="text-center mt-4">
             <Spinner animation="border" />
+            <p className="mt-2">Loading top performers...</p>
           </div>
         ) : error ? (
-          <Alert variant="danger" className="text-center">
+          <Alert variant="danger" className="text-center mt-4">
             {error}
           </Alert>
         ) : (

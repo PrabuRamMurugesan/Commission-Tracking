@@ -60,9 +60,18 @@ const UserManagement = () => {
 
   const handleShow = (user = null) => {
     setEditUser(user);
-    setFormData(
-      user || { name: "", email: "", role: "Customer", status: true }
-    );
+    if (user) {
+      // Map accountStatus to status for the form
+      const status = user.accountStatus === "active" ? true : false;
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        role: user.role || "Customer",
+        status: status,
+      });
+    } else {
+      setFormData({ name: "", email: "", role: "Customer", status: true });
+    }
     setShowModal(true);
   };
 
@@ -78,7 +87,8 @@ const UserManagement = () => {
     e.preventDefault();
     try {
       if (!formData.name || !formData.email) {
-        alert("Name and Email are required!");
+        setToastMessage("Name and Email are required!");
+        setShowToast(true);
         return;
       }
 
@@ -88,15 +98,16 @@ const UserManagement = () => {
 
       const method = editUser ? "put" : "post";
 
-      await axios[method](endpoint, formData);
+      const response = await axios[method](endpoint, formData);
 
       fetchUsers();
       handleClose();
-      setToastMessage("User saved successfully!");
+      setToastMessage(editUser ? "User updated successfully!" : "User created successfully!");
       setShowToast(true);
     } catch (error) {
       console.error("Error saving user", error);
-      setToastMessage("Error saving user");
+      const errorMessage = error.response?.data?.message || error.message || "Error saving user";
+      setToastMessage(errorMessage);
       setShowToast(true);
     }
   };
@@ -238,9 +249,14 @@ const UserManagement = () => {
           </thead>
           <tbody>
             {users
-              .filter((user) =>
-                user.name.toLowerCase().includes(searchQuery.toLowerCase())
-              )
+              .filter((user) => {
+                if (!searchQuery) return true; // Show all users if search is empty
+                const searchLower = searchQuery.toLowerCase();
+                const name = (user.name || "").toLowerCase();
+                const email = (user.email || "").toLowerCase();
+                const role = (user.role || "").toLowerCase();
+                return name.includes(searchLower) || email.includes(searchLower) || role.includes(searchLower);
+              })
               .map((user) => (
                 <tr key={user._id}>
                   <td>
@@ -250,10 +266,10 @@ const UserManagement = () => {
                       onChange={() => handleSelectUser(user._id)}
                     />
                   </td>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>{user.role}</td>
-                  <td>{user.status ? "Active" : "Inactive"}</td>
+                  <td>{user.name || "-"}</td>
+                  <td>{user.email || "-"}</td>
+                  <td>{user.role || "-"}</td>
+                  <td>{user.accountStatus === "active" ? "Active" : user.accountStatus === "inactive" ? "Inactive" : user.accountStatus || "Active"}</td>
                   <td>
                     <Button variant="warning" onClick={() => handleShow(user)}>
                       Edit

@@ -1,8 +1,11 @@
 import { connectDB } from "../../../lib/db";
 import User from "../../../models/User";
-import Transaction from "../../../models/Transaction"; // Optional, only if exists
+import Transaction from "../../../models/Transaction";
+import handleCors from "../../../lib/cors";
 
 export default async function handler(req, res) {
+  await handleCors(req, res);
+
   const { userId, role } = req.query;
 
   if (req.method !== "GET") {

@@ -1,8 +1,10 @@
 // src/components/AgentTable.jsx
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { FaArrowUp, FaRegEye } from "react-icons/fa";
 import { LuArrowUp10 } from "react-icons/lu";
 import { VscActivateBreakpoints } from "react-icons/vsc";
+import ViewAgentModal from "./ViewAgentModal";
 
 // Create credentials for an Agent (same pattern as Territory)
 async function createCredentialsForAgent(row) {
@@ -42,6 +44,8 @@ async function createCredentialsForAgent(row) {
 
 const AgentTable = ({ agents, loading, refreshList, setToast }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState(null);
   const tableContainerRef = useRef(null);
 
   // Handle scroll detection
@@ -74,14 +78,102 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
     });
   };
 
+  // Handle View action
+  const handleView = (agent) => {
+    setSelectedAgent(agent);
+    setShowViewModal(true);
+  };
+
+  // Handle Promote action
+  const handlePromote = async (agent) => {
+    try {
+      if (!agent._id) {
+        return setToast?.({
+          show: true,
+          type: "error",
+          message: "Agent ID is missing",
+        });
+      }
+
+      const response = await axios.put(`/api/agents/${agent._id}`, {
+        accountStatus: "active",
+      });
+
+      if (response.status === 200) {
+        setToast?.({
+          show: true,
+          type: "success",
+          message: `Agent "${agent.name || agent._id}" promoted successfully`,
+        });
+        refreshList?.();
+      }
+    } catch (error) {
+      console.error("[handlePromote]", error);
+      setToast?.({
+        show: true,
+        type: "error",
+        message: error.response?.data?.message || "Failed to promote agent",
+      });
+    }
+  };
+
+  // Handle Deactivate action
+  const handleDeactivate = async (agent) => {
+    try {
+      if (!agent._id) {
+        return setToast?.({
+          show: true,
+          type: "error",
+          message: "Agent ID is missing",
+        });
+      }
+
+      const confirmed = window.confirm(
+        `Are you sure you want to deactivate "${agent.name || agent._id}"?`
+      );
+
+      if (!confirmed) return;
+
+      const response = await axios.delete(`/api/agents/${agent._id}`);
+
+      if (response.status === 200 || response.status === 204) {
+        console.log("Deactivate response:", response.data);
+        
+        setToast?.({
+          show: true,
+          type: "success",
+          message: `Agent "${agent.name || agent._id}" deactivated successfully. Status updated to inactive.`,
+        });
+        
+        if (refreshList) {
+          setTimeout(async () => {
+            try {
+              await refreshList();
+              console.log("List refreshed after deactivation");
+            } catch (refreshError) {
+              console.error("Error refreshing list:", refreshError);
+            }
+          }, 300);
+        } else {
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("[handleDeactivate]", error);
+      setToast?.({
+        show: true,
+        type: "error",
+        message: error.response?.data?.message || "Failed to deactivate agent",
+      });
+    }
+  };
+
   return (
     <div className="position-relative">
       <div
         className="table-responsive"
         ref={tableContainerRef}
         style={{
-          maxHeight: "500px",
-          overflowY: "auto",
           maxHeight: "500px",
           overflowY: "auto",
           overflowX: "auto", // enable x-scroll
@@ -155,28 +247,30 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
                 <tr key={agent._id}>
                   <td>{index + 1}</td>
                   <th>{agent._id}</th>
-                  <td>{agent.name}</td>
-                  <td>{agent.email}</td>
-                  <td>{agent.businessPartnerCode}</td>
-                  <td>{agent.pan}</td>
-                  <td>{agent.gstin}</td>
-                  <td>{agent.phone}</td>
-                  <td>{agent.platform}</td>
+                  <td>{agent.name || "-"}</td>
+                  <td>{agent.email || "-"}</td>
+                  <td>{agent.businessPartnerCode || "-"}</td>
+                  <td>{agent.pan || "-"}</td>
+                  <td>{agent.gstin || "-"}</td>
+                  <td>{agent.phone || "-"}</td>
+                  <td>{agent.platform || "-"}</td>
                   <td>
                     <span
                       className={`badge bg-${
                         agent.accountStatus === "active"
                           ? "success"
+                          : agent.accountStatus === "suspended"
+                          ? "warning"
                           : "secondary"
                       }`}
                     >
-                      {agent.accountStatus}
+                      {agent.accountStatus || "inactive"}
                     </span>
                   </td>
-                  <td>{agent.district}</td>
-                  <td>{agent.state}</td>
-                  <td>{agent.city}</td>
-                  <td>{agent.pincode}</td>
+                  <td>{agent.district || "-"}</td>
+                  <td>{agent.state || "-"}</td>
+                  <td>{agent.city || "-"}</td>
+                  <td>{agent.pincode || "-"}</td>
                   <td>{agent.totalCustomers || 0}</td>
                   <td>{agent.totalTransactions || 0}</td>
                   <td>₹{agent.commissionEarned || 0}</td>
@@ -192,13 +286,24 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
                       role="group"
                       aria-label="Actions"
                     >
-                      <button className="btn btn-outline-dark d-flex align-items-center gap-1 px-2 py-1">
+                      <button
+                        className="btn btn-outline-dark d-flex align-items-center gap-1 px-2 py-1"
+                        onClick={() => handleView(agent)}
+                      >
                         <FaRegEye className="text-dark" /> View
                       </button>
-                      <button className="btn btn-outline-success d-flex align-items-center gap-1 px-2 py-1">
+                      <button
+                        className="btn btn-outline-success d-flex align-items-center gap-1 px-2 py-1"
+                        onClick={() => handlePromote(agent)}
+                        disabled={!agent.actions?.canPromote || agent.accountStatus === "active"}
+                      >
                         <LuArrowUp10 className="text-success" /> Promote
                       </button>
-                      <button className="btn btn-outline-danger d-flex align-items-center gap-1 px-2 py-1">
+                      <button
+                        className="btn btn-outline-danger d-flex align-items-center gap-1 px-2 py-1"
+                        onClick={() => handleDeactivate(agent)}
+                        disabled={!agent.actions?.canDeactivate || agent.accountStatus === "inactive"}
+                      >
                         <VscActivateBreakpoints className="text-danger" />{" "}
                         Deactivate
                       </button>
@@ -232,6 +337,16 @@ const AgentTable = ({ agents, loading, refreshList, setToast }) => {
           <FaArrowUp />
         </button>
       )}
+
+      {/* View Agent Modal */}
+      <ViewAgentModal
+        show={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setSelectedAgent(null);
+        }}
+        agent={selectedAgent}
+      />
     </div>
   );
 };

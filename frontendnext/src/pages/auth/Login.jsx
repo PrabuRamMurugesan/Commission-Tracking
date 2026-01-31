@@ -77,8 +77,8 @@ const LoginPage = () => {
         </form>
 
         <div className="link-group">
-          <a href="#">Forgot Password?</a>
-          <a href="/signup">Create an Account</a>
+          <a href="/forgot-password" onClick={(e) => { e.preventDefault(); navigate("/forgot-password"); }}>Forgot Password?</a>
+          <a href="/signup" onClick={(e) => { e.preventDefault(); navigate("/signup"); }}>Create an Account</a>
         </div>
 
         <div className="divider">

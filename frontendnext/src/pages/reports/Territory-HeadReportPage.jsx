@@ -19,7 +19,8 @@ const TerritoryHeadReportPage = () => {
       const res = await axios.get("/api/reports/Territory-HeadReport", {
         params: { startDate, endDate, search },
       });
-      setTerritories(res.data.territories || []);
+      // Controller returns { territory: [...] }
+      setTerritories(res.data.territory || res.data.territories || []);
       setLoading(false);
     } catch (err) {
       console.error("Fetch error:", err);

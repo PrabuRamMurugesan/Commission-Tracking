@@ -1,8 +1,10 @@
 // src/components/VendorTable.jsx
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { FaArrowUp, FaRegEye } from "react-icons/fa";
 import { LuArrowUp10 } from "react-icons/lu";
 import { VscActivateBreakpoints } from "react-icons/vsc";
+import ViewVendorModal from "./ViewVendorModal";
 
 // Create credentials for a Vendor (same pattern as Territory)
 async function createCredentialsForVendor(row) {
@@ -42,6 +44,8 @@ async function createCredentialsForVendor(row) {
 
 const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState(null);
   const tableContainerRef = useRef(null);
 
   // Handle scroll detection
@@ -74,14 +78,102 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
     });
   };
 
+  // Handle View action
+  const handleView = (vendor) => {
+    setSelectedVendor(vendor);
+    setShowViewModal(true);
+  };
+
+  // Handle Promote action
+  const handlePromote = async (vendor) => {
+    try {
+      if (!vendor._id) {
+        return setToast?.({
+          show: true,
+          type: "error",
+          message: "Vendor ID is missing",
+        });
+      }
+
+      const response = await axios.put(`/api/vendor/${vendor._id}`, {
+        accountStatus: "active",
+      });
+
+      if (response.status === 200) {
+        setToast?.({
+          show: true,
+          type: "success",
+          message: `Vendor "${vendor.name || vendor._id}" promoted successfully`,
+        });
+        refreshList?.();
+      }
+    } catch (error) {
+      console.error("[handlePromote]", error);
+      setToast?.({
+        show: true,
+        type: "error",
+        message: error.response?.data?.message || "Failed to promote vendor",
+      });
+    }
+  };
+
+  // Handle Deactivate action
+  const handleDeactivate = async (vendor) => {
+    try {
+      if (!vendor._id) {
+        return setToast?.({
+          show: true,
+          type: "error",
+          message: "Vendor ID is missing",
+        });
+      }
+
+      const confirmed = window.confirm(
+        `Are you sure you want to deactivate "${vendor.name || vendor._id}"?`
+      );
+
+      if (!confirmed) return;
+
+      const response = await axios.delete(`/api/vendor/${vendor._id}`);
+
+      if (response.status === 200 || response.status === 204) {
+        console.log("Deactivate response:", response.data);
+        
+        setToast?.({
+          show: true,
+          type: "success",
+          message: `Vendor "${vendor.name || vendor._id}" deactivated successfully. Status updated to inactive.`,
+        });
+        
+        if (refreshList) {
+          setTimeout(async () => {
+            try {
+              await refreshList();
+              console.log("List refreshed after deactivation");
+            } catch (refreshError) {
+              console.error("Error refreshing list:", refreshError);
+            }
+          }, 300);
+        } else {
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("[handleDeactivate]", error);
+      setToast?.({
+        show: true,
+        type: "error",
+        message: error.response?.data?.message || "Failed to deactivate vendor",
+      });
+    }
+  };
+
   return (
     <div className="table-responsive position-relative">
       <div
         className="table-responsive"
         ref={tableContainerRef}
         style={{
-          maxHeight: "500px",
-          overflowY: "auto",
           maxHeight: "500px",
           overflowY: "auto",
           overflowX: "auto", // enable x-scroll
@@ -155,28 +247,30 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
                 <tr key={vendorRow._id}>
                   <td>{index + 1}</td>
                   <th>{vendorRow._id}</th>
-                  <td>{vendorRow.name}</td>
-                  <td>{vendorRow.email}</td>
-                  <td>{vendorRow.businessPartnerCode}</td>
-                  <td>{vendorRow.pan}</td>
-                  <td>{vendorRow.gstin}</td>
-                  <td>{vendorRow.phone}</td>
-                  <td>{vendorRow.platform}</td>
+                  <td>{vendorRow.name || "-"}</td>
+                  <td>{vendorRow.email || "-"}</td>
+                  <td>{vendorRow.businessPartnerCode || "-"}</td>
+                  <td>{vendorRow.pan || "-"}</td>
+                  <td>{vendorRow.gstin || "-"}</td>
+                  <td>{vendorRow.phone || "-"}</td>
+                  <td>{vendorRow.platform || "-"}</td>
                   <td>
                     <span
                       className={`badge bg-${
                         vendorRow.accountStatus === "active"
                           ? "success"
+                          : vendorRow.accountStatus === "suspended"
+                          ? "warning"
                           : "secondary"
                       }`}
                     >
-                      {vendorRow.accountStatus}
+                      {vendorRow.accountStatus || "inactive"}
                     </span>
                   </td>
-                  <td>{vendorRow.district}</td>
-                  <td>{vendorRow.state}</td>
-                  <td>{vendorRow.city}</td>
-                  <td>{vendorRow.pincode}</td>
+                  <td>{vendorRow.district || "-"}</td>
+                  <td>{vendorRow.state || "-"}</td>
+                  <td>{vendorRow.city || "-"}</td>
+                  <td>{vendorRow.pincode || "-"}</td>
                   <td>{vendorRow.totalCustomers || 0}</td>
                   <td>{vendorRow.totalTransactions || 0}</td>
                   <td>₹{vendorRow.commissionEarned || 0}</td>
@@ -192,13 +286,24 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
                       role="group"
                       aria-label="Actions"
                     >
-                      <button className="btn btn-outline-dark d-flex align-items-center gap-1 px-2 py-1">
+                      <button
+                        className="btn btn-outline-dark d-flex align-items-center gap-1 px-2 py-1"
+                        onClick={() => handleView(vendorRow)}
+                      >
                         <FaRegEye className="text-dark" /> View
                       </button>
-                      <button className="btn btn-outline-success d-flex align-items-center gap-1 px-2 py-1">
+                      <button
+                        className="btn btn-outline-success d-flex align-items-center gap-1 px-2 py-1"
+                        onClick={() => handlePromote(vendorRow)}
+                        disabled={!vendorRow.actions?.canPromote || vendorRow.accountStatus === "active"}
+                      >
                         <LuArrowUp10 className="text-success" /> Promote
                       </button>
-                      <button className="btn btn-outline-danger d-flex align-items-center gap-1 px-2 py-1">
+                      <button
+                        className="btn btn-outline-danger d-flex align-items-center gap-1 px-2 py-1"
+                        onClick={() => handleDeactivate(vendorRow)}
+                        disabled={!vendorRow.actions?.canDeactivate || vendorRow.accountStatus === "inactive"}
+                      >
                         <VscActivateBreakpoints className="text-danger" />{" "}
                         Deactivate
                       </button>
@@ -232,6 +337,16 @@ const VendorTable = ({ vendor, loading, refreshList, setToast }) => {
           <FaArrowUp />
         </button>
       )}
+
+      {/* View Vendor Modal */}
+      <ViewVendorModal
+        show={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setSelectedVendor(null);
+        }}
+        vendor={selectedVendor}
+      />
     </div>
   );
 };

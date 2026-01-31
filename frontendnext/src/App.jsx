@@ -8,6 +8,7 @@ import Dashboard from "./components/Dashboard";
 import FranchiseCreatePage from "./components/FranchiseCreatePage";
 import Login from "./pages/auth/Login"; // Login page for user authentication
 import SignUpForm from "./pages/auth/SignupPage"; // Login page for user authentication
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage"; // Forgot password page
 import PrivateRoute from "./components/PrivateRoute"; // Protect sensitive routes
 import ReferralDashboard from "./pages/ReferralDashboard";
 import AdminOverview from "./pages/dashboard/AdminOverview";
@@ -19,6 +20,7 @@ import AddCommission from "./pages/AddCommission";
 import FranchiseList from "./pages/FranchiseList";
 import TerritoryHeadList from "./pages/TerritoryHeadList";
 import Reports from "./pages/Reports";
+import ItemsPage from "./pages/ItemsPage";
 import Profile from "./pages/users/UserProfilePage";
 import TransactionCard from "./components/TransactionCard";
 import FranchiseDashboard from "./pages/dashboard/FranchiseeDashboard"; // Check if this path is correct
@@ -138,9 +140,13 @@ import InvoiceEscrowInfo from "./pages/invoices/[id]/escrowInfo";
 import StatusTrackerPage from "./pages/invoices/[id]/statusTracker";
 // Admin Pages
 import AdminUploadForm from "./pages/admin/AdminUploadForm";
+import UploadProductsPage from "./pages/admin/UploadProductsPage";
 import UploadLogsPage from "./pages/admin/UploadLogsPage";
+import UploadLogsEmptyPage from "./pages/admin/UploadLogsEmptyPage";
 import RollbackManager from "./pages/admin/RollbackManager";
+import RollbackManagerEmptyPage from "./pages/admin/RollbackManagerEmptyPage";
 import AuditTrailPage from "./pages/admin/AuditTrailPage";
+import AuditTrailEmptyPage from "./pages/admin/AuditTrailEmptyPage";
 import FlaggedProductsPage from "./pages/admin/FlaggedProductsPage";
 import RotationManager from "./pages/admin/RotationManager";
 import TodayVendorViewer from "./pages/admin/TodayVendorViewer";
@@ -169,6 +175,7 @@ function App() {
             <Route path="/header" element={<Header />} />
             <Route path="/" element={<Login />} />
             <Route path="/signup" element={<SignUpForm />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/usermanagement" element={<UserManagement />} />
             {/* Admin Dashboard */}
             <Route
@@ -671,6 +678,14 @@ function App() {
               }
             />
             <Route
+              path="/Items"
+              element={
+                <PrivateRoute>
+                  <ItemsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="/profile"
               element={
                 <PrivateRoute>
@@ -823,10 +838,38 @@ function App() {
               }
             />
             {/* <---------Monster product Add-----------> */}
-            <Route path="/admin/upload" element={<AdminUploadForm />} />
-            <Route path="/admin/upload-logs" element={<UploadLogsPage />} />
-            <Route path="/admin/rollback" element={<RollbackManager />} />
-            <Route path="/admin/audit" element={<AuditTrailPage />} />
+            <Route
+              path="/admin/upload"
+              element={
+                <PrivateRoute>
+                  <UploadProductsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/upload-logs"
+              element={
+                <PrivateRoute>
+                  <UploadLogsEmptyPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/rollback"
+              element={
+                <PrivateRoute>
+                  <RollbackManagerEmptyPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/audit"
+              element={
+                <PrivateRoute>
+                  <AuditTrailEmptyPage />
+                </PrivateRoute>
+              }
+            />
             <Route path="/admin/flagged" element={<FlaggedProductsPage />} />
             <Route path="/admin/rotation" element={<RotationManager />} />
             <Route path="/admin/today-vendor" element={<TodayVendorViewer />} />

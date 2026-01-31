@@ -10,9 +10,16 @@ const ToastMessage = ({ message, type = "success", onClose }) => {
   return (
     <div
       className={`toast align-items-center text-white bg-${
-        type === "error" ? "danger" : "success"
-      } border-0 show position-fixed bottom-0 end-0 m-4`}
+        type === "error" ? "danger" : type === "warning" ? "warning" : "success"
+      } border-0 show position-fixed`}
       role="alert"
+      style={{
+        bottom: "80px",
+        right: "20px",
+        zIndex: 9999,
+        minWidth: "300px",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      }}
     >
       <div className="d-flex">
         <div className="toast-body">{message}</div>

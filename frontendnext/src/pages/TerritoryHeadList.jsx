@@ -26,8 +26,10 @@ const TerritoryHeadList = () => {
             currentUser?.role === "franchise" ? currentUser.id : undefined,
         },
       });
-      setTerritory(res.data.territory);
-      setFilteredTerritory(res.data.territory);
+      const territoriesList = res.data.territory || [];
+      setTerritory(territoriesList);
+      // Update filtered list with fresh data
+      setFilteredTerritory(territoriesList);
       setLoading(false);
     } catch (err) {
       console.error("Error loading Territory:", err);
@@ -109,6 +111,7 @@ const TerritoryHeadList = () => {
             <TerritoryFilterBar
               territory={territory}
               setFilteredTerritory={setFilteredTerritory}
+              key={territory.length}
             />
 
             <TerritoryTable

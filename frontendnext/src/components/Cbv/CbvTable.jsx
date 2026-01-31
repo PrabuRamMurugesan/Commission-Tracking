@@ -1,11 +1,15 @@
 // src/components/CbvTable.jsx
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { FaArrowUp, FaRegEye } from "react-icons/fa";
 import { LuArrowUp10 } from "react-icons/lu";
 import { VscActivateBreakpoints } from "react-icons/vsc";
+import ViewCBVModal from "./ViewCBVModal";
 
 const CbvTable = ({ cbv, loading, refreshList, setToast }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedCBV, setSelectedCBV] = useState(null);
   const tableContainerRef = useRef(null);
 
   // Handle scroll detection
@@ -37,6 +41,96 @@ const CbvTable = ({ cbv, loading, refreshList, setToast }) => {
       behavior: "smooth",
     });
   };
+
+  // Handle View action
+  const handleView = (cbv) => {
+    setSelectedCBV(cbv);
+    setShowViewModal(true);
+  };
+
+  // Handle Promote action
+  const handlePromote = async (cbv) => {
+    try {
+      if (!cbv._id) {
+        return setToast?.({
+          show: true,
+          type: "error",
+          message: "CBV ID is missing",
+        });
+      }
+
+      const response = await axios.put(`/api/cbv/${cbv._id}`, {
+        accountStatus: "active",
+      });
+
+      if (response.status === 200) {
+        setToast?.({
+          show: true,
+          type: "success",
+          message: `CBV "${cbv.name || cbv._id}" promoted successfully`,
+        });
+        refreshList?.();
+      }
+    } catch (error) {
+      console.error("[handlePromote]", error);
+      setToast?.({
+        show: true,
+        type: "error",
+        message: error.response?.data?.message || "Failed to promote CBV",
+      });
+    }
+  };
+
+  // Handle Deactivate action
+  const handleDeactivate = async (cbv) => {
+    try {
+      if (!cbv._id) {
+        return setToast?.({
+          show: true,
+          type: "error",
+          message: "CBV ID is missing",
+        });
+      }
+
+      const confirmed = window.confirm(
+        `Are you sure you want to deactivate "${cbv.name || cbv._id}"?`
+      );
+
+      if (!confirmed) return;
+
+      const response = await axios.delete(`/api/cbv/${cbv._id}`);
+
+      if (response.status === 200 || response.status === 204) {
+        console.log("Deactivate response:", response.data);
+        
+        setToast?.({
+          show: true,
+          type: "success",
+          message: `CBV "${cbv.name || cbv._id}" deactivated successfully. Status updated to inactive.`,
+        });
+        
+        if (refreshList) {
+          setTimeout(async () => {
+            try {
+              await refreshList();
+              console.log("List refreshed after deactivation");
+            } catch (refreshError) {
+              console.error("Error refreshing list:", refreshError);
+            }
+          }, 300);
+        } else {
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("[handleDeactivate]", error);
+      setToast?.({
+        show: true,
+        type: "error",
+        message: error.response?.data?.message || "Failed to deactivate CBV",
+      });
+    }
+  };
   return (
     <>
       <div className="position-relative">
@@ -44,8 +138,6 @@ const CbvTable = ({ cbv, loading, refreshList, setToast }) => {
           className="table-responsive"
           ref={tableContainerRef}
           style={{
-            maxHeight: "500px",
-            overflowY: "auto",
             maxHeight: "500px",
             overflowY: "auto",
             overflowX: "auto", // ✅ enable x-scroll
@@ -119,28 +211,30 @@ const CbvTable = ({ cbv, loading, refreshList, setToast }) => {
                   <tr key={cbv._id}>
                     <td>{index + 1}</td>
                     <td>{cbv._id}</td>
-                    <td>{cbv.name}</td>
-                    <td>{cbv.email}</td>
-                    <td>{cbv.businessPartnerCode}</td>
-                    <td>{cbv.pan}</td>
-                    <td>{cbv.gstin}</td>
-                    <td>{cbv.phone}</td>
-                    <td>{cbv.platform}</td>
+                    <td>{cbv.name || "-"}</td>
+                    <td>{cbv.email || "-"}</td>
+                    <td>{cbv.businessPartnerCode || "-"}</td>
+                    <td>{cbv.pan || "-"}</td>
+                    <td>{cbv.gstin || "-"}</td>
+                    <td>{cbv.phone || "-"}</td>
+                    <td>{cbv.platform || "-"}</td>
                     <td>
                       <span
                         className={`badge bg-${
                           cbv.accountStatus === "active"
                             ? "success"
+                            : cbv.accountStatus === "suspended"
+                            ? "warning"
                             : "secondary"
                         }`}
                       >
-                        {cbv.accountStatus}
+                        {cbv.accountStatus || "inactive"}
                       </span>
                     </td>
-                    <td>{cbv.district}</td>
-                    <td>{cbv.state}</td>
-                    <td>{cbv.city}</td>
-                    <td>{cbv.pincode}</td>
+                    <td>{cbv.district || "-"}</td>
+                    <td>{cbv.state || "-"}</td>
+                    <td>{cbv.city || "-"}</td>
+                    <td>{cbv.pincode || "-"}</td>
                     <td>{cbv.totalCustomers || 0}</td>
                     <td>{cbv.totalTransactions || 0}</td>
                     <td>₹{cbv.commissionEarned || 0}</td>
@@ -156,13 +250,24 @@ const CbvTable = ({ cbv, loading, refreshList, setToast }) => {
                         role="group"
                         aria-label="Actions"
                       >
-                        <button className="btn btn-outline-dark d-flex align-items-center gap-1 px-2 py-1">
+                        <button
+                          className="btn btn-outline-dark d-flex align-items-center gap-1 px-2 py-1"
+                          onClick={() => handleView(cbv)}
+                        >
                           <FaRegEye className="text-dark" /> View
                         </button>
-                        <button className="btn btn-outline-success d-flex align-items-center gap-1 px-2 py-1">
+                        <button
+                          className="btn btn-outline-success d-flex align-items-center gap-1 px-2 py-1"
+                          onClick={() => handlePromote(cbv)}
+                          disabled={!cbv.actions?.canPromote || cbv.accountStatus === "active"}
+                        >
                           <LuArrowUp10 className="text-success" /> Promote
                         </button>
-                        <button className="btn btn-outline-danger d-flex align-items-center gap-1 px-2 py-1">
+                        <button
+                          className="btn btn-outline-danger d-flex align-items-center gap-1 px-2 py-1"
+                          onClick={() => handleDeactivate(cbv)}
+                          disabled={!cbv.actions?.canDeactivate || cbv.accountStatus === "inactive"}
+                        >
                           <VscActivateBreakpoints className="text-danger" />{" "}
                           Deactivate
                         </button>
@@ -175,6 +280,16 @@ const CbvTable = ({ cbv, loading, refreshList, setToast }) => {
           </table>
         </div>
       </div>
+
+      {/* View CBV Modal */}
+      <ViewCBVModal
+        show={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setSelectedCBV(null);
+        }}
+        cbv={selectedCBV}
+      />
     </>
   );
 };

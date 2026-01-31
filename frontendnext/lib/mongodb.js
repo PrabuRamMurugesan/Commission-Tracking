@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-const MONGO_URI = process.env.MONGODB_URI;
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  throw new Error("❌ MONGO_URI not set in environment variables");
+  throw new Error("❌ MONGODB_URI (or MONGO_URI) not set in environment variables");
 }
 
 let cached = global.mongoose;

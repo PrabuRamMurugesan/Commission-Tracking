@@ -1,9 +1,9 @@
 
 import mongoose from "mongoose";
 
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 
-if (!MONGO_URI) throw new Error("MONGO_URI not defined");
+if (!MONGO_URI) throw new Error("MONGO_URI or MONGODB_URI not defined");
 
 let cached = global.mongoose || { conn: null, promise: null };
 global.mongoose = cached;

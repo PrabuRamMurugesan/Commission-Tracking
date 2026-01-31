@@ -19,7 +19,8 @@ const CustomerBecomeVendorReportPage = () => {
       const response = await axios.get("/api/reports/cbavs", {
         params: { startDate, endDate, search },
       });
-      setCbavs(response.data.data || []);
+      // Controller returns { cbv: [...] }
+      setCbavs(response.data.cbv || response.data.data || []);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching CBAVs:", error);

@@ -19,7 +19,8 @@ const VendorReportPage = () => {
       const response = await axios.get("/api/reports/vendors", {
         params: { startDate, endDate, search },
       });
-      setVendors(response.data.vendors || []);
+      // Controller returns { vendor: [...] }
+      setVendors(response.data.vendor || response.data.vendors || []);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching vendors:", error);

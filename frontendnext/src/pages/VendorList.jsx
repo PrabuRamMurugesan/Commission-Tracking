@@ -89,9 +89,10 @@ const VendorList = () => {
         },
       });
 
-      const data = res.data?.vendor || res.data || [];
-      setVendor(data);
-      setFilteredVendor(data);
+      const vendorsList = res.data?.vendor || res.data || [];
+      setVendor(vendorsList);
+      // Update filtered list with fresh data
+      setFilteredVendor(vendorsList);
       setLoading(false);
     } catch (err) {
       console.error("Error loading Vendor:", err);

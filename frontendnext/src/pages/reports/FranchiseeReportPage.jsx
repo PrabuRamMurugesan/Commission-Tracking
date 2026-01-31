@@ -19,7 +19,8 @@ const FranchiseeReportPage = () => {
       const response = await axios.get("/api/reports/franchisees", {
         params: { startDate, endDate, search },
       });
-      setFranchisees(response.data.data || []);
+      // Controller returns { francise: [...] }
+      setFranchisees(response.data.francise || response.data.data || []);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching franchisees:", error);

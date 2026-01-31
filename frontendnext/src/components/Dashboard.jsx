@@ -78,12 +78,6 @@ function DashboardPage() {
           <h1 className="text-primary">Dashboard</h1>
           <div className="d-flex">
             <button
-              className="btn btn-success mx-2"
-              onClick={() => navigate("/signup")} // Navigate to English page
-            >
-              SignUp
-            </button>
-            <button
               className="btn btn-primary mx-2"
               onClick={() => navigate("/usermanagement")} // Navigate to POS page
             >

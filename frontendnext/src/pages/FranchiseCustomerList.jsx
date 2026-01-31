@@ -151,14 +151,14 @@ const FranchiseCustomerList = () => {
                         <td className="p-3">{franchise._id}</td>
                         <td className="p-3">{franchise.name}</td>
                         <td className="p-3">{franchise.email}</td>
-                        <td className="p-3">{franchise.pan}</td>
-                        <td className="p-3">{franchise.gstin}</td>
                         <td className="p-3">{franchise.phone || "-"}</td>
-                        <td className="p-3">{franchise.status}</td>
-                        <td className="p-3">{franchise.district}</td>
-                        <td className="p-3">{franchise.state}</td>
-                        <td className="p-3">{franchise.city}</td>
-                        <td className="p-3">{franchise.pincode}</td>
+                        <td className="p-3">{franchise.pan || "-"}</td>
+                        <td className="p-3">{franchise.gstin || "-"}</td>
+                        <td className="p-3">{franchise.accountStatus || franchise.status || "-"}</td>
+                        <td className="p-3">{franchise.district || "-"}</td>
+                        <td className="p-3">{franchise.state || "-"}</td>
+                        <td className="p-3">{franchise.city || "-"}</td>
+                        <td className="p-3">{franchise.pincode || "-"}</td>
                         <td className="p-3">{franchise.totalCustomers || 0}</td>
                         <td className="p-3">
                           {franchise.totalTransactions || 0}
@@ -174,7 +174,7 @@ const FranchiseCustomerList = () => {
                             className="btn btn-outline-dark btn-sm d-flex align-items-center flex-row gap-1 px-2 py-1 flex-nowrap"
                             onClick={() =>
                               navigate(
-                                `/dashboard/customer-list?role=franchise&userId=${franchise._id}`
+                                `/dashboard/customer-list?role=franchise&userId=${franchise.franchiseeId || franchise._id}`
                               )
                             }
                           >

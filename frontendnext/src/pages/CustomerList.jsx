@@ -63,7 +63,7 @@ const CustomerList = () => {
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [query.get("role"), query.get("userId")]);
 
   const handleAddSuccess = () => {
     fetchCustomers();
@@ -75,10 +75,21 @@ const CustomerList = () => {
     setShowModal(false);
   };
 
+  const filterRole = query.get("role");
+  const filterUserId = query.get("userId");
+  const isFilteredByPartner = filterRole && filterUserId;
+
   return (
     <div className="container-fluid mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3>Customer List</h3>
+        <div>
+          <h3>Customer List</h3>
+          {isFilteredByPartner && (
+            <p className="text-muted small mb-0">
+              Filtered by business partner: <span className="text-capitalize fw-medium">{filterRole}</span> (ID: {filterUserId})
+            </p>
+          )}
+        </div>
         <div>
           <button
             className="btn btn-primary me-2"

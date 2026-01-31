@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Sidebar from "../Sidebar";
 
 const TransactionReportPage = () => {
   const [filters, setFilters] = useState({
@@ -18,29 +19,21 @@ const TransactionReportPage = () => {
   const [error, setError] = useState(null);
 
   const fetchTransactions = async () => {
-    const token = localStorage.getItem("authToken");
-    console.log(token, "get token");
-
-    if (!token) {
-      console.warn("⚠️ No token found. Skipping request.");
-      setError("Not logged in");
-      return;
-    }
-
     setLoading(true);
+    setError(null);
     try {
       const { data } = await axios.get("/api/reports/transactions", {
         params: filters,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
+      console.log("✅ Transactions API Response:", data);
       setTransactions(data.transactions || []);
     } catch (err) {
       console.error("❌ Fetch error:", err);
-      setError("Unauthorized or server error");
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || "Failed to fetch transactions";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -57,8 +50,10 @@ const TransactionReportPage = () => {
   };
 
   return (
-    <div className="container py-4">
-      <h2 className="mb-4">Transaction Report</h2>
+    <div className="dashboard-container">
+      <Sidebar />
+      <div className="dashboard-content" style={{ padding: "7% 20px", width: "100%", overflowY: "auto" }}>
+        <h2 className="mb-4">Transaction Report</h2>
 
       {/* Filters Section */}
       <div className="row mb-3">
@@ -200,25 +195,25 @@ const TransactionReportPage = () => {
             ) : (
               transactions.map((txn, index) => (
                 <tr key={index}>
-                  <td>{new Date(txn.date).toLocaleString()}</td>
+                  <td>{txn.date ? new Date(txn.date).toLocaleString() : txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "-"}</td>
                   <td>{txn.transactionId}</td>
                   <td>{txn.orderId || "-"}</td>
                   <td>{txn.platform}</td>
                   <td>
                     {txn.buyerName} / {txn.buyerPhone}
                   </td>
-                  <td>{txn.sellerRole}</td>
-                  <td>{txn.transactionType}</td>
-                  <td>{txn.transactionCategory}</td>
-                  <td>{txn.gstType}</td>
-                  <td>₹{txn.cgst?.toFixed(2)}</td>
-                  <td>₹{txn.sgst?.toFixed(2)}</td>
-                  <td>₹{txn.igst?.toFixed(2)}</td>
-                  <td>₹{txn.totalGSTAmount?.toFixed(2)}</td>
-                  <td>₹{txn.amount.toFixed(2)}</td>
-                  <td>₹{txn.balanceAfter?.toFixed(2) || "-"}</td>
-                  <td>{txn.paymentMethod}</td>
-                  <td>{txn.status}</td>
+                  <td>{txn.sellerRole || "-"}</td>
+                  <td>{txn.transactionType || "-"}</td>
+                  <td>{txn.transactionCategory || "-"}</td>
+                  <td>{txn.gstType || "-"}</td>
+                  <td>₹{(txn.cgst || 0).toFixed(2)}</td>
+                  <td>₹{(txn.sgst || 0).toFixed(2)}</td>
+                  <td>₹{(txn.igst || 0).toFixed(2)}</td>
+                  <td>₹{(txn.totalGSTAmount || 0).toFixed(2)}</td>
+                  <td>₹{(txn.finalAmount || txn.amount || 0).toFixed(2)}</td>
+                  <td>₹{txn.balanceAfter ? txn.balanceAfter.toFixed(2) : "-"}</td>
+                  <td>{txn.paymentMethod || "-"}</td>
+                  <td>{txn.status || "-"}</td>
                   <td>{txn.comments || "-"}</td>
                   <td>
                     <button className="btn btn-sm btn-info">Expand</button>
@@ -229,6 +224,30 @@ const TransactionReportPage = () => {
           </tbody>
         </table>
       </div>
+      </div>
+      <style>
+        {`
+          .dashboard-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+          }
+          .dashboard-content {
+            padding: 7% 20px;
+            width: 100%;
+            height: 100%;
+            overflow-y: scroll;
+          }
+          @media (max-width: 768px) {
+            .dashboard-container {
+              flex-direction: column;
+            }
+            .dashboard-content {
+              padding: 7rem 20px;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };

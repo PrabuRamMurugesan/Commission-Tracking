@@ -46,11 +46,11 @@ const CustomerTable = ({ customers, loading, refreshList, setToast }) => {
                 {/* 3 */}
                 <td>{c.email || "-"}</td>
                 {/* 4 */}
-                <td>{c.phone || "-"}</td>
-                {/* 5 – Role */}
-                <td className="text-capitalize">{c.referralType}</td>
+                <td>{c.phone || c.mobile || "-"}</td>
+                {/* 5 – Role (BBSlive: role; CRM: referralType) */}
+                <td className="text-capitalize">{c.role || c.referralType || "-"}</td>
                 <td className="text-capitalize">
-                  {c.referralId}
+                  {c.referralId || (c.vendor_id ? String(c.vendor_id) : "-")}
                 </td>
                 {/* 6 – Platform */}
                 <td>{c.platform || "-"}</td>

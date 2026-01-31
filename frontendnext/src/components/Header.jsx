@@ -54,25 +54,34 @@ const Header = () => {
             onMouseEnter={() => toggleDropdown(true)}
             onMouseLeave={() => toggleDropdown(false)}
           >
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setShowDropdown(!showDropdown);
-              }}
+            <Link
+              to="/dashboard/agent-list"
+              onClick={() => setShowDropdown(false)}
+              style={{ color: "white", textDecoration: "none", fontWeight: "bold", padding: "8px 12px", display: "block", borderRadius: "4px" }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "rgb(61, 72, 87)"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
             >
               Agents
-            </a>
+            </Link>
             {showDropdown && (
               <ul className="dropdown-menu">
                 <li>
-                  <a href="/agents/all">All Agents</a>
+                  <Link 
+                    to="/dashboard/agent-list" 
+                    onClick={() => setShowDropdown(false)}
+                    style={{ textDecoration: "none", color: "white" }}
+                  >
+                    All Agents
+                  </Link>
                 </li>
                 <li>
-                  <a href="/agents/top">Top Agents</a>
-                </li>
-                <li>
-                  <a href="/agents/regions">Agents by Region</a>
+                  <Link 
+                    to="/dashboard/top-performance"
+                    onClick={() => setShowDropdown(false)}
+                    style={{ textDecoration: "none", color: "white" }}
+                  >
+                    Top Performance
+                  </Link>
                 </li>
               </ul>
             )}
@@ -87,9 +96,7 @@ const Header = () => {
           <li>
             <a href="/profile">Profile</a>
           </li>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
+      
 
           {!isLoggedIn ? (
             <li>

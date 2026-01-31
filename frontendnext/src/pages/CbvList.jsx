@@ -26,8 +26,10 @@ const CbvList = () => {
             currentUser?.role === "franchise" ? currentUser.id : undefined,
         },
       });
-      setCbv(res.data.cbv);
-      setFilteredCbv(res.data.cbv);
+      const cbvsList = res.data.cbv || [];
+      setCbv(cbvsList);
+      // Update filtered list with fresh data
+      setFilteredCbv(cbvsList);
       setLoading(false);
     } catch (err) {
       console.error("Error loading Cbv:", err);
@@ -100,7 +102,7 @@ const CbvList = () => {
               </div>
             </div>
 
-            <CbvFilterBar cbv={cbv} setFilteredCbv={setFilteredCbv} />
+            <CbvFilterBar cbv={cbv} setFilteredCbv={setFilteredCbv} key={cbv.length} />
 
             <CbvTable
               cbv={filteredCbv}

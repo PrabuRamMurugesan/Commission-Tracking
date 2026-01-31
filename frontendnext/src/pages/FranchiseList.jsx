@@ -26,10 +26,13 @@ const FranchiseList = () => {
             currentUser?.role === "franchise" ? currentUser.id : undefined,
         },
       });
-      setFrancise(res.data.francise);
-      console.log(res.data.francise, "res.data.francise");
+      
+      const franchises = res.data.francise || [];
+      setFrancise(franchises);
+      console.log(franchises, "res.data.francise");
 
-      setFilteredFrancise(res.data.francise);
+      // Update filtered list with fresh data
+      setFilteredFrancise(franchises);
       setLoading(false);
     } catch (err) {
       console.error("Error loading Francise:", err);
@@ -111,6 +114,7 @@ const FranchiseList = () => {
             <FranciseFilterBar
               francise={francise}
               setFilteredFrancise={setFilteredFrancise}
+              key={francise.length} // Force re-render when list changes
             />
 
             <FranciseTable

@@ -154,7 +154,7 @@ export const getAllFranchises = async (req, res) => {
 
     const allFranchises = Array.from(allFranchisesMap.values());
 
-    res.status(200).json({ francise: allFranchises });
+return res.status(200).json({ success: true, francise: allFranchises });
   } catch (error) {
     console.error("Error fetching francise:", error);
     res.status(500).json({ message: "Failed to fetch francise" });
@@ -166,46 +166,25 @@ export const getFranciseById = async (req, res) => {
   try {
     await connectDB();
     const { id } = req.query;
-const formatted = francise.map(f => ({
-    _id: f._id,
-    name: `${f.vendor_fname || ""} ${f.vendor_lname || ""}`.trim(),
-    email: f.email || "",
-    phone: f.outlet_contact_no || "",
-    pan: f.pan_number || "",
-    gstin: f.gst_number || "",
-    district: f.gst_address?.district || "",
-    state: f.gst_address?.state || "",
-    city: f.gst_address?.city || "",
-    pincode: f.register_business_address?.postalCode || "",
-    platform: "BBSCART",
-    accountStatus: f.accountStatus || "active",
-    totalCustomers: f.totalCustomers || 0,
-    totalTransactions: f.totalTransactions || 0,
-    commissionEarned: f.commissionEarned || 0,
-    commissionPending: f.commissionPending || 0,
-    joinedDate: f.joinedDate,
-    whatsappNumber: f.whatsappNumber || "",
-    profilePic: f.profilePic || "",
-    designation: "Francise",
-    zone: f.zone || "",
-    commissionRates: f.commissionRates || [],
-    loginHistory: f.loginHistory || [],
-    actions: {
-        canPromote: true,
-        canDeactivate: true
-    }
-}));
 
     const francise = await Francise.findById(id);
     if (!francise)
       return res.status(404).json({ message: "Francise not found" });
 
-    res.status(200).json({ francise: formatted });
+    let result = francise.toObject();
+
+    // If BBSCART fields exist, transform
+    if (hasBBSCARTFields(result)) {
+      result = transformBBSCARTFranchise(result);
+    }
+
+    res.status(200).json({ francise: result });
   } catch (error) {
     console.error("Get francise error:", error);
     res.status(500).json({ message: "Failed to fetch francise" });
   }
 };
+
 
 // ✅ POST Create New Francise
 export const createFranchise = async (req, res) => {

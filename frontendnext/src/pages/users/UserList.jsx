@@ -7,7 +7,7 @@ function UserList() {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const response = await axios.get("http://localhost:3000/api/users");
+        const response = await axios.get("/api/users");
         console.log("User fetch response:", response.data);
         setUsers(response.data.users);
       } catch (error) {

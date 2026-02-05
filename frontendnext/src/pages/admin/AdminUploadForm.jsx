@@ -27,7 +27,7 @@ const AdminUploadForm = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3000/api/admin/bulk-upload",
+        "/api/admin/bulk-upload",
         {
           method: "POST",
           body: formData,

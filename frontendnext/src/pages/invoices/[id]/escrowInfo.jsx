@@ -17,7 +17,7 @@ const EscrowInfo = () => {
       const token = localStorage.getItem("authToken");
 
       try {
-        const res = await axios.get(`http://localhost:3000/api/invoices/${id}`,
+        const res = await axios.get(`/api/invoices/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

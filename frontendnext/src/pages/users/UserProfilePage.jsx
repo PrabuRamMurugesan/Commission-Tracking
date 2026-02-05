@@ -156,7 +156,7 @@ function UserProfilePage() {
         }
       });
 
-      const res = await axios.put(`http://localhost:3000/api/user/update`, updatePayload, {
+      const res = await axios.put(`/api/user/update`, updatePayload, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -196,7 +196,7 @@ function UserProfilePage() {
 
     try {
       setLoading(true);
-      const res = await axios.put(`http://localhost:3000/api/user/password`, {
+      const res = await axios.put(`/api/user/password`, {
         email: storedEmail,
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
@@ -235,7 +235,7 @@ function UserProfilePage() {
       form.append("file", kycFile);
       form.append("email", storedEmail);
 
-      const res = await axios.post(`http://localhost:3000/api/user/upload-kyc`, form, {
+      const res = await axios.post(`/api/user/upload-kyc`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setUploadStatus("✅ KYC uploaded successfully!");
@@ -243,7 +243,7 @@ function UserProfilePage() {
       setKycFile(null);
 
       // Refresh user data
-      const profileRes = await axios.get(`http://localhost:3000/api/user/profile?email=${storedEmail}`);
+      const profileRes = await axios.get(`/api/user/profile?email=${storedEmail}`);
       if (profileRes.data?.user) {
         setUser(profileRes.data.user);
       }
@@ -264,7 +264,7 @@ function UserProfilePage() {
 
     try {
       setLoading(true);
-      const res = await axios.put(`http://localhost:3000/api/user/address`, {
+      const res = await axios.put(`/api/user/address`, {
         email: storedEmail,
         address: newAddress,
       });
@@ -287,7 +287,7 @@ function UserProfilePage() {
   const handleDeleteAddress = async (index) => {
     try {
       setLoading(true);
-      const res = await axios.delete(`http://localhost:3000/api/user/address`, {
+      const res = await axios.delete(`/api/user/address`, {
         data: { email: storedEmail, index },
       });
       setAddresses(res.data.addresses);
@@ -311,7 +311,7 @@ function UserProfilePage() {
       form.append("file", profileImageFile);
       form.append("email", storedEmail);
 
-      const res = await axios.post(`http://localhost:3000/api/user/upload-profile-image`, form, {
+      const res = await axios.post(`/api/user/upload-profile-image`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -320,9 +320,9 @@ function UserProfilePage() {
       if (!imageUrl && res.data.profileImageRelative) {
         // Convert relative path to full API URL
         if (res.data.profileImageRelative.startsWith('/uploads')) {
-          imageUrl = `http://localhost:3000/api${res.data.profileImageRelative}`;
+          imageUrl = `/api${res.data.profileImageRelative}`;
         } else {
-          imageUrl = `http://localhost:3000/api/uploads/profile-images/${res.data.profileImageRelative}`;
+          imageUrl = `/api/uploads/profile-images/${res.data.profileImageRelative}`;
         }
       }
       if (imageUrl) {
@@ -333,7 +333,7 @@ function UserProfilePage() {
 
       // Keep the preview from the response, then refresh user data
       // Refresh user data to sync with backend
-      const profileRes = await axios.get(`http://localhost:3000/api/user/profile?email=${storedEmail}`);
+      const profileRes = await axios.get(`/api/user/profile?email=${storedEmail}`);
       if (profileRes.data?.user) {
         setUser(profileRes.data.user);
         // Ensure preview is set from updated user data
@@ -344,12 +344,12 @@ function UserProfilePage() {
             fullImageUrl = updatedImageUrl;
           } else if (updatedImageUrl.startsWith('/uploads')) {
             // Convert /uploads/profile-images/file.jpg to /api/uploads/profile-images/file.jpg
-            fullImageUrl = `http://localhost:3000/api${updatedImageUrl}`;
+            fullImageUrl = `/api${updatedImageUrl}`;
           } else {
-            fullImageUrl = `http://localhost:3000/api/uploads/profile-images/${updatedImageUrl}`;
+            fullImageUrl = `/api/uploads/profile-images/${updatedImageUrl}`;
           }
           // Only update preview if we got a valid URL
-          if (fullImageUrl && fullImageUrl !== 'http://localhost:3000/api/uploads/profile-images/undefined') {
+          if (fullImageUrl && fullImageUrl !== '/api/uploads/profile-images/undefined') {
             setProfileImagePreview(fullImageUrl);
           }
         }
@@ -374,7 +374,7 @@ function UserProfilePage() {
   const handleSettingsUpdate = async () => {
     try {
       setLoading(true);
-      await axios.put(`http://localhost:3000/api/user/settings`, {
+      await axios.put(`/api/user/settings`, {
         email: storedEmail,
         settings,
       });
@@ -528,15 +528,15 @@ function UserProfilePage() {
                         ? (user.profileImage.startsWith('http')
                           ? user.profileImage
                           : user.profileImage.startsWith('/uploads')
-                            ? `http://localhost:3000/api${user.profileImage}`
-                            : `http://localhost:3000/api/uploads/profile-images/${user.profileImage}`)
+                           ? `/api${user.profileImage}`
+                            : `/api/uploads/profile-images/${user.profileImage}`)
                         : null) ||
                       (user.profilePic
                         ? (user.profilePic.startsWith('http')
                           ? user.profilePic
                           : user.profilePic.startsWith('/uploads')
-                            ? `http://localhost:3000/api${user.profilePic}`
-                            : `http://localhost:3000/api/uploads/profile-images/${user.profilePic}`)
+                            ? `/api${user.profilePic}`
+                            : `/api/uploads/profile-images/${user.profilePic}`)
                         : null) ||
                       "/default-profile.png"
                     }

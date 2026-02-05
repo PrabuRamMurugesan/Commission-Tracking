@@ -41,7 +41,7 @@ const UserManagement = () => {
   //   e.preventDefault();
 
   //   try {
-  //     const response = await axios.post("http://localhost:3000/api/users", {
+  //     const response = await axios.post("/api/users", {
   //       name: formData.name,
   //       email: formData.email,
   //       role: formData.role || "vendor",

@@ -7,9 +7,9 @@ import { generateLocationPartnerCode } from "../../utils/generatePartnerCode.js"
 
 // Helper function to check if a franchise has BBSCART fields
 const hasBBSCARTFields = (franchise) => {
-  return !!(franchise.vendor_fname || franchise.vendor_lname || 
-            franchise.pan_number || franchise.gst_number || 
-            franchise.outlet_contact_no || franchise.gst_address);
+  return !!(franchise.vendor_fname || franchise.vendor_lname ||
+    franchise.pan_number || franchise.gst_number ||
+    franchise.outlet_contact_no || franchise.gst_address);
 };
 
 // Helper function to transform BBSCART franchise data to CRM format
@@ -24,7 +24,7 @@ const transformBBSCARTFranchise = (bbscartFranchise) => {
   const gstAddr = bbscartFranchise.gst_address || {};
   const outletLoc = bbscartFranchise.outlet_location || {};
   const regAddr = bbscartFranchise.register_business_address || {};
-  
+
   // Helper to get first non-empty value
   const getFirstNonEmpty = (...values) => {
     for (const val of values) {
@@ -35,12 +35,12 @@ const transformBBSCARTFranchise = (bbscartFranchise) => {
   };
 
   // Generate placeholder email if missing (using franchise ID)
-  const email = bbscartFranchise.email || 
-                `franchise-${bbscartFranchise._id}@bbscart.local`;
+  const email = bbscartFranchise.email ||
+    `franchise-${bbscartFranchise._id}@bbscart.local`;
 
   // Determine account status - prioritize existing accountStatus, then check BBSCART fields
   let accountStatus = bbscartFranchise.accountStatus;
-  
+
   // If accountStatus is explicitly set, use it (for updates)
   if (accountStatus && (accountStatus === "active" || accountStatus === "inactive" || accountStatus === "suspended")) {
     // Use the explicit accountStatus
@@ -48,8 +48,8 @@ const transformBBSCARTFranchise = (bbscartFranchise) => {
     accountStatus = "active";
   } else if (bbscartFranchise.is_decline === true) {
     accountStatus = "suspended";
-  } else if (bbscartFranchise.application_status === "submitted" || 
-             bbscartFranchise.application_status === "approved") {
+  } else if (bbscartFranchise.application_status === "submitted" ||
+    bbscartFranchise.application_status === "approved") {
     // Only set to active if is_active is also true or not explicitly false
     if (bbscartFranchise.is_active !== false) {
       accountStatus = "active";
@@ -113,7 +113,8 @@ export const getAllFranchises = async (req, res) => {
     if (!platform || platform === "BBSCART") {
       try {
         const bbscartData = await BBSCARTFranchiseHead.find({}).sort({ created_at: -1 });
-        bbscartFranchises = bbscartData.map(transformBBSCARTFranchise);
+        bbscartFranchises = bbscartData.map(f => transformBBSCARTFranchise(f.toObject()));
+
       } catch (bbscartError) {
         console.warn("Error fetching BBSCART franchises:", bbscartError.message);
         // Continue even if BBSCART fetch fails
@@ -141,12 +142,12 @@ export const getAllFranchises = async (req, res) => {
 
     // Combine and deduplicate by _id (in case a franchise exists in both)
     const allFranchisesMap = new Map();
-    
+
     // Add BBSCART franchises first
     bbscartFranchises.forEach(f => {
       allFranchisesMap.set(f._id.toString(), f);
     });
-    
+
     // Add CRM franchises (they will overwrite BBSCART if same _id)
     crmFranchisesPlain.forEach(f => {
       allFranchisesMap.set(f._id.toString(), f);
@@ -154,7 +155,7 @@ export const getAllFranchises = async (req, res) => {
 
     const allFranchises = Array.from(allFranchisesMap.values());
 
-return res.status(200).json({ success: true, francise: allFranchises });
+    return res.status(200).json({ success: true, francise: allFranchises });
   } catch (error) {
     console.error("Error fetching francise:", error);
     res.status(500).json({ message: "Failed to fetch francise" });
@@ -206,7 +207,7 @@ export const createFranchise = async (req, res) => {
       stateCode,
       cityCode,
     } = req.body;
- // ✅ Generate BPC properly here
+    // ✅ Generate BPC properly here
     const count = await Francise.countDocuments({ stateCode, cityCode });
 
     const bpc = generateLocationPartnerCode({

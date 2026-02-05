@@ -1,6 +1,6 @@
 // crmnext/pages/api/reports/sales.js
 import dbConnect from "../../../utils/dbConnect";
-const { Transaction } = require("../../../models/Transaction");
+import { Transaction } from "../../../models/Transaction";
 import handleCors from "../../../lib/cors";
 
 export default async function handler(req, res) {

@@ -1,5 +1,5 @@
 // crmnext/pages/api/reports/sales.js
-import dbConnect from "../../../lib/mongodb";
+import dbConnect from "../../../utils/dbConnect";
 const { Transaction } = require("../../../models/Transaction");
 import handleCors from "../../../lib/cors";
 

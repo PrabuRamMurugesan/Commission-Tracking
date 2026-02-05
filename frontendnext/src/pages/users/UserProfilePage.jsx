@@ -77,8 +77,9 @@ function UserProfilePage() {
       try {
         setLoading(true);
         const [profileRes, logsRes] = await Promise.all([
-          axios.get(`http://localhost:3000/api/user/profile?email=${storedEmail}`),
-          axios.get(`http://localhost:3000/api/user/login-log?email=${storedEmail}`),
+          axios.get(`/api/user/profile?email=${storedEmail}`),
+          axios.get(`/api/user/login-log?email=${storedEmail}`),
+
         ]);
 
         if (profileRes.data?.user) {
@@ -93,9 +94,9 @@ function UserProfilePage() {
               fullImageUrl = profileImg;
             } else if (profileImg.startsWith('/uploads')) {
               // Convert /uploads/profile-images/file.jpg to /api/uploads/profile-images/file.jpg
-              fullImageUrl = `http://localhost:3000/api${profileImg}`;
+              fullImageUrl = `/api${profileImg}`;
             } else {
-              fullImageUrl = `http://localhost:3000/api/uploads/profile-images/${profileImg}`;
+              fullImageUrl = `/api/uploads/profile-images/${profileImg}`;
             }
             setProfileImagePreview(fullImageUrl);
           }
@@ -121,7 +122,9 @@ function UserProfilePage() {
     );
     if (!confirm) return;
     try {
-      await axios.delete(`http://localhost:3000/api/user/account`, { data: { email: storedEmail } });
+      await axios.delete(`/api/user/account`, {
+        data: { email: storedEmail }
+      });
       showToast("Account deactivated successfully", "success");
       localStorage.clear();
       setTimeout(() => {
@@ -145,7 +148,7 @@ function UserProfilePage() {
         name: formData.name,
         phone: formData.phone,
       };
-      
+
       // Only include fields that have values
       Object.keys(updatePayload).forEach(key => {
         if (updatePayload[key] === undefined || updatePayload[key] === null) {
@@ -158,7 +161,7 @@ function UserProfilePage() {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (res.data?.user) {
         setUser(res.data.user);
         setFormData(res.data.user);
@@ -202,7 +205,7 @@ function UserProfilePage() {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (res.status === 200) {
         showToast("Password updated successfully!", "success");
         setPasswordData({
@@ -238,7 +241,7 @@ function UserProfilePage() {
       setUploadStatus("✅ KYC uploaded successfully!");
       showToast("KYC document uploaded successfully!", "success");
       setKycFile(null);
-      
+
       // Refresh user data
       const profileRes = await axios.get(`http://localhost:3000/api/user/profile?email=${storedEmail}`);
       if (profileRes.data?.user) {
@@ -311,7 +314,7 @@ function UserProfilePage() {
       const res = await axios.post(`http://localhost:3000/api/user/upload-profile-image`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      
+
       // Update preview immediately with the uploaded image URL
       let imageUrl = res.data.profileImage;
       if (!imageUrl && res.data.profileImageRelative) {
@@ -325,9 +328,9 @@ function UserProfilePage() {
       if (imageUrl) {
         setProfileImagePreview(imageUrl);
       }
-      
+
       showToast("Profile image uploaded successfully!", "success");
-      
+
       // Keep the preview from the response, then refresh user data
       // Refresh user data to sync with backend
       const profileRes = await axios.get(`http://localhost:3000/api/user/profile?email=${storedEmail}`);
@@ -351,11 +354,11 @@ function UserProfilePage() {
           }
         }
       }
-      
+
       // Don't clear the preview - keep it visible
       // Only clear the file input so user can upload again if needed
       setProfileImageFile(null);
-      
+
       // Reset file input element using ref
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -391,11 +394,11 @@ function UserProfilePage() {
 
     const csv = logs
       .map((log) => {
-        const date = log.loginTime 
+        const date = log.loginTime
           ? new Date(log.loginTime).toLocaleString()
           : log.createdAt
-          ? new Date(log.createdAt).toLocaleString()
-          : "N/A";
+            ? new Date(log.createdAt).toLocaleString()
+            : "N/A";
         return date;
       })
       .join("\n");
@@ -520,21 +523,21 @@ function UserProfilePage() {
                 <div className="position-relative d-inline-block">
                   <Image
                     src={
-                      profileImagePreview || 
-                      (user.profileImage 
-                        ? (user.profileImage.startsWith('http') 
-                            ? user.profileImage 
-                            : user.profileImage.startsWith('/uploads')
+                      profileImagePreview ||
+                      (user.profileImage
+                        ? (user.profileImage.startsWith('http')
+                          ? user.profileImage
+                          : user.profileImage.startsWith('/uploads')
                             ? `http://localhost:3000/api${user.profileImage}`
                             : `http://localhost:3000/api/uploads/profile-images/${user.profileImage}`)
-                        : null) || 
-                      (user.profilePic 
-                        ? (user.profilePic.startsWith('http') 
-                            ? user.profilePic 
-                            : user.profilePic.startsWith('/uploads')
+                        : null) ||
+                      (user.profilePic
+                        ? (user.profilePic.startsWith('http')
+                          ? user.profilePic
+                          : user.profilePic.startsWith('/uploads')
                             ? `http://localhost:3000/api${user.profilePic}`
                             : `http://localhost:3000/api/uploads/profile-images/${user.profilePic}`)
-                        : null) || 
+                        : null) ||
                       "/default-profile.png"
                     }
                     roundedCircle
@@ -597,8 +600,8 @@ function UserProfilePage() {
                           {log.loginTime
                             ? new Date(log.loginTime).toLocaleString()
                             : log.createdAt
-                            ? new Date(log.createdAt).toLocaleString()
-                            : "N/A"}
+                              ? new Date(log.createdAt).toLocaleString()
+                              : "N/A"}
                         </td>
                       </tr>
                     ))}
@@ -900,8 +903,8 @@ function UserProfilePage() {
                           {log.loginTime
                             ? new Date(log.loginTime).toLocaleString()
                             : log.createdAt
-                            ? new Date(log.createdAt).toLocaleString()
-                            : "N/A"}
+                              ? new Date(log.createdAt).toLocaleString()
+                              : "N/A"}
                         </td>
                       </tr>
                     ))}

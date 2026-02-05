@@ -96,6 +96,8 @@ const transformBBSCARTFranchise = (bbscartFranchise) => {
 
 // ✅ GET All Francises (optionally by franchiseeId or platform)
 export const getAllFranchises = async (req, res) => {
+  console.log("USING NEW TRANSFORM VERSION");
+
   try {
     await connectDB();
 

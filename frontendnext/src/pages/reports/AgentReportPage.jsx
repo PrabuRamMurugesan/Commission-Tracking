@@ -35,7 +35,7 @@ const AgentReportPage = () => {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="container m-4 p-4 bg-light rounded shadow-sm border vw-100">
       <h2>Agents Report</h2>
 
       <div className="row mb-3">

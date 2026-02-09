@@ -81,7 +81,7 @@ const CommissionReportPage = () => {
   }, []);
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4 mb-4 d-flex flex-column gap-4 commission-report-page border rounded p-4 m-5 bg-light shadow vw-100">
       <h2 className="mb-4">Commission Report</h2>
 
       {/* Filters */}

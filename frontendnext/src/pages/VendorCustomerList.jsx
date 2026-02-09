@@ -6,8 +6,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { MdSupportAgent } from "react-icons/md";
+import VendorFilterBar from "../components/Vendor/VendorFilterBar";
 const VendorCustomerList = () => {
   const [vendors, setVendors] = useState([]);
+  const [filteredVendors, setFilteredVendors] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -49,6 +52,7 @@ const VendorCustomerList = () => {
         console.log("🧾 Vendor API Response:", res.data.vendors); // ✅ ADD THIS
 
         setVendors(res.data.vendors || []);
+         setFilteredVendors(res.data.vendors || []); 
       } catch (err) {
         console.error("Error loading vendors:", err);
       } finally {
@@ -86,6 +90,11 @@ const VendorCustomerList = () => {
               <MdSupportAgent className="me-2 text-dark" /> Choose Vendor for
               Customers List
             </h2>
+<VendorFilterBar
+  vendors={vendors}
+  setFilteredVendors={setFilteredVendors}
+  key={vendors.length}
+/>
 
             <div className="position-relative">
               <div
@@ -147,7 +156,7 @@ const VendorCustomerList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {vendors.map((vendor, index) => (
+                    {filteredVendors.map((vendor, index) => (
                       <tr key={vendor._id}>
                         <td>{index + 1}</td>
                         <td>{vendor._id}</td>

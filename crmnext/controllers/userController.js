@@ -85,12 +85,46 @@ export const createUser = async (req, res) => {
     });
   }
 };
-
 export const getAllUsers = async (req, res) => {
-  await connectDB();
-  const users = await User.find({});
-  res.status(200).json({ users });
+  try {
+    await connectDB();
+
+    const { page = 1, status, role } = req.query;
+    const limit = 10;
+    const skip = (Number(page) - 1) * limit;
+
+    const query = {};
+
+    // ✅ STATUS FILTER
+    if (status === "true") {
+      query.accountStatus = "active";
+    } else if (status === "false") {
+      query.accountStatus = "inactive";
+    }
+
+    // ✅ ROLE FILTER
+    if (role) {
+      query.role = role.toLowerCase();
+    }
+
+    const total = await User.countDocuments(query);
+
+    const users = await User.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      users,
+      totalPages: Math.ceil(total / limit),
+      currentPage: Number(page),
+    });
+  } catch (err) {
+    console.error("Get users error:", err);
+    res.status(500).json({ message: "Failed to fetch users" });
+  }
 };
+
 export const deleteUserById = async (req, res) => {
   await connectDB();
   try {
@@ -188,5 +222,28 @@ export const getUserById = async (req, res) => {
     res.status(200).json({ user });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+export const bulkDeleteUsers = async (req, res) => {
+  try {
+    await connectDB();
+
+    const { users } = req.body;
+
+    if (!Array.isArray(users) || users.length === 0) {
+      return res.status(400).json({ message: "No users provided" });
+    }
+
+    await User.deleteMany({
+      _id: { $in: users },
+    });
+
+    res.status(200).json({
+      message: "Users deleted successfully",
+      deletedCount: users.length,
+    });
+  } catch (err) {
+    console.error("Bulk delete error:", err);
+    res.status(500).json({ message: "Bulk delete failed" });
   }
 };

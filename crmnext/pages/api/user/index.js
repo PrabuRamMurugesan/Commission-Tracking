@@ -9,7 +9,8 @@
 
 // export default allowCors(handler); // ✅ This is now correct
 // crmnext/pages/api/users/index.js
-import { getAllUsers, createUser } from "../../../controllers/userController";
+import { getAllUsers, createUser  
+} from "../../../controllers/userController";
 import allowCors from "../../../middleware/cors";
 
 const handler = async (req, res) => {

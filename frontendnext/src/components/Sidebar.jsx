@@ -395,7 +395,7 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link className="submenu-item" to="/admin/rollback-tools">
+                  <Link className="submenu-item" to="/admin/upload-logs">
                     Rollback Tools
                   </Link>
                 </li>

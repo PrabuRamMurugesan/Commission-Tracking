@@ -3,14 +3,16 @@ import { useNavigate } from "react-router-dom";
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // ✅ Remove token from Local Storage
-    navigate("/"); // ✅ Redirect to login page
-  };
+const confirmLogout = () => {
+   if (window.confirm("Are you sure you want to logout?")) {
+       localStorage.clear();
+       router.push("/login");
+   }
+};
 
   return (
     <nav>
-      <button onClick={handleLogout}>Logout</button>
+      <button onClick={confirmLogout}>Logout</button>
     </nav>
   );
 };

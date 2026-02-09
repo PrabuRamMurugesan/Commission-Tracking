@@ -4,6 +4,7 @@ import axios from "axios";
 import AddBeneficiaryWizard from "./AddBeneficiaryWizard";
 import BeneficiaryTable from "./BeneficiaryTable";
 import BeneficiaryFilterBar from "./BeneficiaryFilterBar";
+import Sidebar from "../Sidebar";
 
 const MyBeneficiaries = () => {
   const [openWizard, setOpenWizard] = useState(false);
@@ -77,8 +78,11 @@ const MyBeneficiaries = () => {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="d-flex justify-content-between align-items-center my-3">
+    <>
+     <div className="d-flex vw-100">
+         <Sidebar />
+        <div className="container-fluid p-5 border rounded bg-light shadow m-5">
+      <div className="d-flex justify-content-between align-items-center  m-2 p-5">
         <h3>My Beneficiaries</h3>
 
         <button className="btn btn-primary" onClick={() => setOpenWizard(true)}>
@@ -105,6 +109,9 @@ const MyBeneficiaries = () => {
         />
       )}
     </div>
+     </div>
+    </>
+
   );
 };
 

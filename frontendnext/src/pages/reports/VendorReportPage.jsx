@@ -37,7 +37,7 @@ const VendorReportPage = () => {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="container  bg-light rounded shadow-sm p-4 m-5 border vw-100">
       <h2>Vendor Report</h2>
       <div className="row mb-3">
         <div className="col">
@@ -160,3 +160,4 @@ const VendorReportPage = () => {
 };
 
 export default VendorReportPage;
+ 

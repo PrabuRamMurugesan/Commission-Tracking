@@ -7,6 +7,7 @@ import AddCustomerModal from "../components/Customer/AddCustomerModal";
 import ToastMessage from "../components/ToastMessage";
 import { exportAgentsToCSV } from "../utils/exportHelpers";
 import { useLocation } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
@@ -80,8 +81,10 @@ const CustomerList = () => {
   const isFilteredByPartner = filterRole && filterUserId;
 
   return (
-    <div className="container-fluid mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+   <div className="d-flex flex-row min-vh-100 vw-100"> 
+   <Sidebar />
+   <div className="container-fluid mt-4 d-flex flex-column gap-4 customer-list-page border rounded p-4 m-5 bg-light shadow w-100">
+      <div className="customer-header d-flex justify-content-between align-items-center m-5">
         <div>
           <h3>Customer List</h3>
           {isFilteredByPartner && (
@@ -90,7 +93,7 @@ const CustomerList = () => {
             </p>
           )}
         </div>
-        <div>
+        <div className="header-actions">
           <button
             className="btn btn-primary me-2"
             onClick={() => setShowModal(true)}
@@ -101,7 +104,7 @@ const CustomerList = () => {
             className="btn btn-outline-secondary"
             onClick={fetchCustomers}
           >
-            🔄 Refresh
+            🔄 Refresh 
           </button>
           <button
             className="btn btn-outline-success"
@@ -137,6 +140,57 @@ const CustomerList = () => {
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
+    </div>
+    <style>{`
+    
+  .customer-header {
+  padding: 12px 16px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Buttons group */
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .customer-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .header-actions button {
+    flex: 1;
+    min-width: 150px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .customer-header h3 {
+    font-size: 18px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .header-actions button {
+    width: 100%;
+  }
+}
+    `}</style>
     </div>
   );
 };

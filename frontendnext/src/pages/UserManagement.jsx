@@ -134,9 +134,10 @@ const UserManagement = () => {
 
   const handleBulkDelete = async () => {
     try {
-      await axiosInstance.post("/user/", {
+      await axiosInstance.post("/user/bulk-delete", {
         users: selectedUsers,
       });
+
       fetchUsers();
       setToastMessage("Users deleted successfully!");
       setShowToast(true);
@@ -384,11 +385,11 @@ const UserManagement = () => {
             <input type="file" onChange={(e) => setFile(e.target.files[0])} />
             <button type="submit">Upload</button>
             <select>
-          <option value="pending">Pending</option>
-          <option value="submitted">Submitted</option>
-          <option value="verified">Verified</option>
-          <option value="rejected">Rejected</option>
-        </select>
+              <option value="pending">Pending</option>
+              <option value="submitted">Submitted</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
+            </select>
           </form>
         </div>
 

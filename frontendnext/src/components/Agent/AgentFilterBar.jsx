@@ -1,110 +1,91 @@
-// src/components/AgentFilterBar.jsx
+// src/components/Agent/AgentFilterBar.jsx
 import React, { useState } from "react";
 
 const AgentFilterBar = ({ agents, setFilteredAgents }) => {
   const [search, setSearch] = useState("");
-  const [platform, setPlatform] = useState("");
   const [status, setStatus] = useState("");
   const [zone, setZone] = useState("");
 
-  const uniquePlatforms = [...new Set(agents.map((a) => a.platform))];
-  const uniqueZones = [...new Set(agents.map((a) => a.zone).filter(Boolean))];
+  const uniqueZones = [
+    ...new Set(agents.map((a) => a.zone).filter(Boolean)),
+  ];
 
   const handleFilter = () => {
     let filtered = [...agents];
 
-    if (search) {
-      filtered = filtered.filter(
-        (agent) =>
-          agent.name.toLowerCase().includes(search.toLowerCase()) ||
-          agent.email.toLowerCase().includes(search.toLowerCase()) ||
-          agent.phone.includes(search)
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter((a) =>
+        (a.name || "").toLowerCase().includes(q) ||
+        (a.email || "").toLowerCase().includes(q) ||
+        String(a.phone || "").includes(q)
       );
     }
 
-    if (platform) {
-      filtered = filtered.filter((agent) => agent.platform === platform);
-    }
-
     if (status) {
-      filtered = filtered.filter((agent) => agent.accountStatus === status);
+      filtered = filtered.filter(
+        (a) => (a.accountStatus || "").toLowerCase() === status
+      );
     }
 
     if (zone) {
-      filtered = filtered.filter((agent) => agent.zone === zone);
+      filtered = filtered.filter((a) => a.zone === zone);
     }
 
     setFilteredAgents(filtered);
   };
 
   return (
-    <>
-      <div className="border rounded-3  mb-4 bg-white shadow-sm p-4">
-        <div className="d-flex flex-row align-items-center justify-content-between gap-3 ">
-          <div className="col-md-3 mb-4">
-            <input
-              type="text"
-              className="form-control border-start-2"
-              placeholder="Search name | email | phone"
-              style={{ borderRadius: "10px", width: "250px" }}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          <div className="col-md-2 mb-4 ">
-            <select
-              className="form-select border-start-2"
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-            >
-              <option value="">All Platforms</option>
-              {uniquePlatforms.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="col-md-2 mb-4">
-            <select
-              className="form-select border-start-2"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="suspended">Suspended</option>
-            </select>
-          </div>
-
-          <div className="col-md-2 mb-4">
-            <select
-              className="form-select border-start-2"
-              value={zone}
-              onChange={(e) => setZone(e.target.value)}
-            >
-              <option value="">All Zones</option>
-              {uniqueZones.map((z) => (
-                <option key={z} value={z}>
-                  {z}
-                </option>
-              ))}
-            </select>
-          </div>
+    <div className="border rounded-3 mb-4 bg-white shadow-sm p-4">
+      <div className="d-flex flex-row align-items-center justify-content-between gap-3">
+        <div className="col-md-3">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search name | email | phone"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-        <div cclassName="col-md-5 mb-2  d-flex flex-row align-items-center justify-content-center w-100 mt-3 ">
-          <button
-            className="btn btn-secondary w-100 border-start-0 "
-            onClick={handleFilter}
+
+        <div className="col-md-2">
+          <select
+            className="form-select"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
           >
-            Apply Filters
-          </button>
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+
+        <div className="col-md-2">
+          <select
+            className="form-select"
+            value={zone}
+            onChange={(e) => setZone(e.target.value)}
+          >
+            <option value="">All Zones</option>
+            {uniqueZones.map((z) => (
+              <option key={z} value={z}>
+                {z}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
-    </>
+
+      <div className="col-md-5 considered  mb-2 d-flex justify-content-center w-100 mt-3">
+        <button
+          className="btn btn-secondary w-100"
+          onClick={handleFilter}
+        >
+          Apply Filters
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -6,8 +6,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { MdRealEstateAgent } from "react-icons/md";
+import AgentFilterBar from "../components/Agent/AgentFilterBar";
 const AgentCustomerList = () => {
   const [agents, setAgents] = useState([]);
+  const [filteredAgents, setFilteredAgents] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -45,8 +48,13 @@ const AgentCustomerList = () => {
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const res = await axios.get("/api/users/by-role");
-        setAgents(res.data.agents || []);
+      const res = await axios.get("/api/users/by-role");
+const list = res.data.agents || [];
+
+setAgents(list);
+setFilteredAgents(list); // ✅ CORRECT
+
+
       } catch (err) {
         console.error("Error loading agents:", err);
       } finally {
@@ -86,6 +94,12 @@ const AgentCustomerList = () => {
                 <MdRealEstateAgent className="me-2 text-dark" />
                 Choose Agent for Customers List
               </h2>
+<AgentFilterBar
+  agents={agents}
+  setFilteredAgents={setFilteredAgents}
+  key={agents.length}
+/>
+
 
               <div className="position-relative">
                 <div
@@ -146,7 +160,7 @@ const AgentCustomerList = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {agents.map((agent, index) => (
+                      {filteredAgents.map((agent, index) => (
                         <tr key={agent._id}>
                           <td>{index + 1}</td>
                           <td>{agent._id}</td>

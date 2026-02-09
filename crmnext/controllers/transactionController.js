@@ -1,5 +1,5 @@
-import Transaction from "../models/Transaction";
-import { calculateGstSplit } from "../utils/taxHelper";
+import {Transaction} from "../models/Transaction";
+import { calculateGstSplit } from "../../frontendnext/utils/taxHelper";
 
 export const getTransactionReport = async (req, res) => {
   try {
@@ -33,5 +33,32 @@ export const getTransactionReport = async (req, res) => {
   } catch (err) {
     console.error("Transaction report error:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+export const getFilteredTransactionsFromBBSlive = async (req, res) => {
+  try {
+    const { role, userId } = req.query;
+
+    // Example base query
+    const match = {};
+
+    if (role === "franchise") {
+      match.franchiseId = userId;
+    } else if (role === "agent") {
+      match.agentId = userId;
+    } else if (role === "vendor") {
+      match.vendorId = userId;
+    } else if (role === "customer") {
+      match.customerId = userId;
+    }
+
+    const transactions = await Transaction.find(match)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({ transactions });
+  } catch (err) {
+    console.error("Transaction fetch error:", err);
+    return res.status(500).json({ message: "Failed to fetch transactions" });
   }
 };

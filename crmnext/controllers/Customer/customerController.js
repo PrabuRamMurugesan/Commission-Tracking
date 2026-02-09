@@ -184,74 +184,53 @@ export const deleteCustomer = async (req, res) => {
 // Hierarchy-aware: Franchise / Territory / Agent / Vendor
 // =====================================================
 
+// =====================================================
+// FIXED: FILTERED CUSTOMERS (CRM Customer collection)
+// Hierarchy-aware: Franchise / Agent / Vendor / Territory / CBV
+// =====================================================
+
 export const getFilteredCustomersFromBBSlive = async (req, res) => {
   try {
     await connectDB();
 
     const { role, userId } = req.query;
 
-    const baseMatch = {
-      $or: [
-        { role: "customer" },
-        { role: "user" },
-        { roles: "user" },
-        { roles: { $in: ["user", "customer"] } },
-      ],
-    };
-
-    const chainMatch = {};
-
-    if (role === "vendor") {
-      // Vendor → Customer
-      chainMatch.vendor_id = new mongoose.Types.ObjectId(userId);
-    } else if (role === "agent") {
-      // Agent → Vendor → Customer
-      const vendors = await Vendor.find({ agentId: userId }).select("_id");
-      const vendorIds = vendors.map((v) => v._id);
-      if (!vendorIds.length) {
-        return res.status(200).json({ customers: [] });
-      }
-      chainMatch.vendor_id = { $in: vendorIds };
-    } else if (role === "franchise" || role === "franchisee") {
-      // Franchise: customers linked by vendor_id OR by franchiseId (BBSlive.users)
-      const franchiseOid = new mongoose.Types.ObjectId(userId);
-      const vendors = await Vendor.find({ franchiseeId: userId }).select("_id");
-      const vendorIds = vendors.map((v) => v._id);
-      const orConditions = [{ franchiseId: franchiseOid }];
-      if (vendorIds.length) orConditions.push({ vendor_id: { $in: vendorIds } });
-      chainMatch.$or = orConditions;
-    } else if (role === "territory") {
-      // Territory → Agent → Vendor → Customer
-      const vendors = await Vendor.find({ territoryId: userId }).select("_id");
-      const vendorIds = vendors.map((v) => v._id);
-      if (!vendorIds.length) {
-        return res.status(200).json({ customers: [] });
-      }
-      chainMatch.vendor_id = { $in: vendorIds };
-    } else if (role === "customer") {
-      // Customer dashboard – see self only
-      if (!userId) {
-        return res
-          .status(400)
-          .json({ message: "userId is required for customer role" });
-      }
-      chainMatch._id = new mongoose.Types.ObjectId(userId);
+    if (!role || !userId) {
+      return res.status(400).json({
+        message: "role and userId are required",
+      });
     }
-    // CBV, logistics, health partner etc will be filled later
 
-    const finalMatch =
-      Object.keys(chainMatch).length > 0
-        ? { $and: [baseMatch, chainMatch] }
-        : baseMatch;
+    const objectId = new mongoose.Types.ObjectId(userId);
+    const filter = {};
 
-    const customers = await BBSCARTUser.find(finalMatch).sort({
-      createdAt: -1,
-    });
+    // 🔑 CORE FIX: match against Customer schema fields
+    if (role === "franchise" || role === "franchisee") {
+      filter.franchiseId = objectId;
+    } else if (role === "agent") {
+      filter.agentId = objectId;
+    } else if (role === "vendor") {
+      filter.vendorId = objectId;
+    } else if (role === "territory") {
+      filter.territoryId = objectId;
+    } else if (role === "cbv") {
+      filter.cbvId = objectId;
+    } else if (role === "customer") {
+      filter._id = objectId;
+    }
+
+    console.log("🧪 CRM Customer Filter:", filter);
+
+    const customers = await Customer.find(filter)
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({ customers });
   } catch (error) {
-    console.error("Error fetching filtered customers from BBSlive:", error);
-    res.status(500).json({ message: "Failed to fetch customers" });
+    console.error("❌ Error fetching filtered CRM customers:", error);
+    return res.status(500).json({
+      message: "Failed to fetch customers",
+    });
   }
 };
 

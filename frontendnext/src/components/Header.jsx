@@ -27,12 +27,15 @@ const Header = () => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const handleLogout = () => {
+const handleLogout = () => {
+  if (window.confirm("Are you sure you want to log out?")) {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("authToken");
     setIsLoggedIn(false);
-    navigate("/"); // redirect to login/home
-  };
+    navigate("/");
+  }
+};
+
 
   const toggleDropdown = (isVisible) => {
     setShowDropdown(isVisible);

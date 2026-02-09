@@ -5,9 +5,12 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { RiCloseLine } from "react-icons/ri";
+import FranchiseFilterBar from "../components/Franchisee/FranchiseFilterBar";
 const FranchiseCustomerList = () => {
   const [franchise, setFranchises] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filteredFranchises, setFilteredFranchises] = useState([]);
+
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const tableContainerRef = useRef(null);
@@ -18,6 +21,8 @@ const FranchiseCustomerList = () => {
         console.log("🧾 Franchise API Response:", res.data.franchise); // ✅ ADD THIS
 
         setFranchises(res.data.franchise || []);
+        setFilteredFranchises(res.data.franchise || []);
+
       } catch (err) {
         console.error("Error loading franchise:", err);
       } finally {
@@ -77,6 +82,8 @@ const FranchiseCustomerList = () => {
               transition: "all 0.3s ease-in-out",
             }}
           >
+
+
             <div className="container ">
               <div className="d-flex justify-content-between align-items-center border my-1  p-1 bg-dark rounded-2">
                 <h2 className=" h4 text-white font-bold px-3">
@@ -87,6 +94,10 @@ const FranchiseCustomerList = () => {
                   <RiCloseLine size={35} className="text-white p-1" />
                 </a>
               </div>
+                          <FranchiseFilterBar
+  francise={franchise}
+  setFilteredFrancise={setFilteredFranchises}
+/>
               <div
                 className="table-responsive"
                 ref={tableContainerRef}
@@ -145,7 +156,7 @@ const FranchiseCustomerList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {franchise.map((franchise, index) => (
+                    {filteredFranchises.map((franchise, index) => (
                       <tr key={franchise._id}>
                         <td className="p-3">{index + 1}</td>
                         <td className="p-3">{franchise._id}</td>

@@ -37,7 +37,7 @@ const FranchiseeReportPage = () => {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="container m-4 p-4 bg-light rounded shadow-sm border vw-100">
       <h2>Franchisee Report</h2>
       <div className="row mb-3">
         <div className="col">

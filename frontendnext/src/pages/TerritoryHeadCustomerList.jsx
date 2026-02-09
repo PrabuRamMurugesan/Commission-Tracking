@@ -5,9 +5,11 @@ import { VscActivateBreakpoints } from "react-icons/vsc";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import TerritoryFilterBar from "../components/TerritoryHead/TerritoryFilterBar";
 
 const TerritoryHeadCustomerList = () => {
-  const [territory, setTerritorys] = useState([]);
+const [territory, setTerritorys] = useState([]);
+const [filteredTerritory, setFilteredTerritory] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -48,7 +50,9 @@ const TerritoryHeadCustomerList = () => {
         const res = await axios.get("/api/users/by-role");
         console.log("🧾 Territory API Response:", res.data.territory); // ✅ ADD THIS
 
-        setTerritorys(res.data.territory || []);
+const list = res.data.territory || [];
+setTerritorys(list);
+setFilteredTerritory(list);
       } catch (err) {
         console.error("Error loading territory:", err);
       } finally {
@@ -85,6 +89,10 @@ const TerritoryHeadCustomerList = () => {
               <h2 className="h4 mb-4 text-dark bottom-border pb-2">
                 Choose Territory for Customers List
               </h2>
+<TerritoryFilterBar
+  territory={territory}
+  setFilteredTerritory={setFilteredTerritory}
+/>
 
               <div
                 className="table-responsive"

@@ -116,7 +116,7 @@ const handleSubmit = async () => {
       fd.append("createdBy", createdById);
     }
 
-    const res = await axios.post("http://localhost:5174/api/beneficiaries", fd);
+    const res = await axios.post("/api/beneficiaries", fd);
 
     if (res.data.success) {
       alert("Beneficiary Created Successfully!");

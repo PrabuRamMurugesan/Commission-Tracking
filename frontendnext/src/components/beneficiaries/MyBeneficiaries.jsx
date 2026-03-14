@@ -20,7 +20,7 @@ const MyBeneficiaries = () => {
 
   const loadData = async () => {
     try {
-      const res = await axios.get("http://localhost:5174/api/beneficiaries", {
+      const res = await axios.get("/api/beneficiaries", {
         params: {
           createdBy: localStorage.getItem("userId"),
           city: filters.city || undefined,
@@ -55,7 +55,7 @@ const MyBeneficiaries = () => {
     if (!window.confirm("Delete this beneficiary?")) return;
 
     try {
-      await axios.delete(`http://localhost:5174/api/beneficiaries/${id}`);
+      await axios.delete(`/api/beneficiaries/${id}`);
       loadData();
     } catch (err) {
       console.error(err);

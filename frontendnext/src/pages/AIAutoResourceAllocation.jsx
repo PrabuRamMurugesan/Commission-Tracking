@@ -25,7 +25,7 @@ const AIAutoResourceAllocation = () => {
 
   const fetchResourceData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/ai-auto-resource-allocation");
+      const response = await axios.get("/api/ai-auto-resource-allocation");
       const data = response.data;
       setResourceData(Array.isArray(data) ? data : []);
       setLoading(false);

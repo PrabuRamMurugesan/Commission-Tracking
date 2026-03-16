@@ -26,7 +26,7 @@ export default function TransactionHistory() {
 
       // ✅ IMPORTANT: call relative URL so Vite proxy forwards to 5000
 const API_BASE =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+  import.meta.env.VITE_API_URL || window.location.origin;
 
 const { data } = await axios.get(
   `${API_BASE}/api/transactions`,

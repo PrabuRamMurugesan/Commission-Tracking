@@ -5,7 +5,7 @@ import axiosInstance from "../../api/axiosInstance";
 import Sidebar from "../../components/Sidebar";
 
 // Establish Socket.IO connection
-const socket = io("http://localhost:5000");
+const socket = io("/");
 
 const AdminDashboard = () => {
   const [overview, setOverview] = useState({});
@@ -14,7 +14,7 @@ const AdminDashboard = () => {
   // Fetch initial overview data from the backend
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/dashboard/admin-overview")
+      .get("/api/dashboard/admin-overview")
       .then((response) => setOverview(response.data))
       .catch((error) => console.error("Error fetching admin overview:", error));
   }, []);

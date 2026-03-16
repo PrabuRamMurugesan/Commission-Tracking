@@ -16,10 +16,7 @@ export default async function handler(req, res) {
         .json({ success: false, message: "partnerId and email required" });
     }
 
-    const base =
-      process.env.BBSCART_BASE ||
-      process.env.BBSCART_BASE ||
-      "http://localhost:5000";
+    const base = process.env.BBSCART_BASE || window.location.origin;
 
     const incomingAuth = req.headers.authorization || "";
     const bearer = incomingAuth.startsWith("Bearer ")

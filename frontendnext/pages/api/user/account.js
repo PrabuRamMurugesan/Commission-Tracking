@@ -1,9 +1,7 @@
 import dbConnect from "../../../lib/mongodb";
 import User from "../../../models/User";
-import handleCors from "../../../lib/cors";
-
-export default async function handler(req, res) {
-  await handleCors(req, res);
+import allowCors from "../../../middleware/cors";
+async function handler(req, res) {
   await dbConnect();
 
   if (req.method !== "DELETE") {
@@ -18,3 +16,5 @@ export default async function handler(req, res) {
     res.status(500).json({ message: "Error", error: err.message });
   }
 }
+
+export default allowCors(handler);

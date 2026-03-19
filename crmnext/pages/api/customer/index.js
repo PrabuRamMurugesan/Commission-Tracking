@@ -1,4 +1,4 @@
-import Cors from "cors";
+import allowCors from "../../../middleware/cors";
 import dbConnect from "../../../lib/mongodb";
 import Customer from "../../../models/Customer/Customer";
 import Agent from "../../../models/Agent/Agent";
@@ -6,26 +6,11 @@ import Vendor from "../../../models/Vendor/Vendor";
 import Cbv from "../../../models/Cbv/Cbv";
 import Franchise from "../../../models/Franchise";
 import TerritoryHead from "../../../models/Territory/TerritoryHead";
-// 1) Set up CORS so your Vite client on 5174 can POST here
-const cors = Cors({
-  origin: "http://localhost:5174",
-  methods: ["POST", "OPTIONS"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-});
-function runMiddleware(req, res, fn) {
-  return new Promise((resolve, reject) =>
-    fn(req, res, (err) => (err ? reject(err) : resolve()))
-  );
-}
 
-export default async function handler(req, res) {
+
+async function handler(req, res) {
   await dbConnect();
-  await runMiddleware(req, res, cors);
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST,OPTIONS");
     return res.status(405).json({ message: "Method Not Allowed" });
@@ -91,3 +76,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: "Could not create customer" });
   }
 }
+
+export default allowCors(handler)

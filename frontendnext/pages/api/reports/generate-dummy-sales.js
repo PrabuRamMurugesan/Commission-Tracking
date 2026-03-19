@@ -2,8 +2,7 @@
 // This endpoint generates dummy sales data for testing
 import dbConnect from "../../../lib/mongodb";
 const { Transaction } = require("../../../models/Transaction");
-import handleCors from "../../../lib/cors";
-
+import allowCors from "../../../middleware/cors";
 const platforms = ["BBSCART", "Golddex", "Thiaworld"];
 const sellerRoles = ["Vendor", "Agent", "CBAV", "Franchisee"];
 const paymentStatuses = ["paid", "escrow", "failed"];
@@ -80,14 +79,9 @@ const generateDummySales = (count = 50) => {
   return dummySales;
 };
 
-export default async function handler(req, res) {
-  await handleCors(req, res);
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
+async function handler(req, res) {
+if (req.method !== "POST") {
+    res.setHeader("Allow", "POST,OPTIONS");
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
@@ -115,3 +109,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
+export default allowCors(handler);

@@ -1,7 +1,7 @@
 // pages/api/reports/import-commissions.js
 import dbConnect from "../../../lib/mongodb";
 import Commission from "../../../models/Commission";
-import handleCors from "../../../lib/cors";
+import allowCors from "../../../middleware/cors";
 import mongoose from "mongoose";
 
 // Helper function to convert MongoDB export format to Mongoose format
@@ -36,14 +36,10 @@ function convertMongoDBExport(data) {
   return data;
 }
 
-export default async function handler(req, res) {
-  await handleCors(req, res);
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+async function handler(req, res) {
 
   if (req.method !== "POST") {
+    res.setHeader("Allow", "POST,OPTIONS");
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
@@ -108,3 +104,4 @@ export default async function handler(req, res) {
     });
   }
 }
+export default allowCors(handler);

@@ -4,10 +4,8 @@ import Vendor from "../../../models/Vendor/Vendor";
 import Agent from "../../../models/Agent/Agent";
 import FranchiseHead from "../../../models/Franchise/Francise";
 import TerritoryHead from "../../../models/Territory/TerritoryHead";
-import handleCors from "../../../lib/cors";
-
-export default async function handler(req, res) {
-  await handleCors(req, res);
+import allowCors from "../../../middleware/cors";
+async function handler(req, res) {
   await dbConnect();
 
   const { email, address, index } = req.body;
@@ -104,3 +102,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: "Server error", error: err.message });
   }
 }
+
+export default allowCors(handler);

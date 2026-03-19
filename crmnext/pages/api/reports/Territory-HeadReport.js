@@ -1,19 +1,12 @@
 // pages/api/reports/Territory-HeadReport.js
 import dbConnect from "../../../lib/mongodb";
 import { getAllTerritory } from "../../../controllers/Territory/territoryHeadController";
-import handleCors from "../../../lib/cors";
-
-export default async function handler(req, res) {
-  await handleCors(req, res);
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "GET") {
+import allowCors from "../../../middleware/cors";
+async function handler(req, res) {
+ if (req.method !== "POST") {
+    res.setHeader("Allow", "POST,OPTIONS");
     return res.status(405).json({ message: "Method Not Allowed" });
   }
-
   try {
     await dbConnect();
     // Use the same controller as /api/territory which fetches from both CRM and BBSCART
@@ -27,3 +20,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
+export default allowCors(handler);

@@ -6,19 +6,14 @@ import FranchiseHead from "../../../models/Franchise/Francise";
 import TerritoryHead from "../../../models/Territory/TerritoryHead";
 import Cbv from "../../../models/Cbv/Cbv";
 import dbConnect from "../../../lib/mongodb";
-import handleCors from "../../../lib/cors";
+import allowCors from "../../../middleware/cors";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { sendPasswordResetEmail } from "../../../utils/emailService.js";
 
-export default async function handler(req, res) {
-  await handleCors(req, res);
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
+async function handler(req, res) {
+if (req.method !== "POST") {
+    res.setHeader("Allow", "POST,OPTIONS");
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
@@ -148,3 +143,5 @@ export default async function handler(req, res) {
     res.status(500).json({ message: "Error processing password reset request" });
   }
 }
+
+export default allowCors(handler);

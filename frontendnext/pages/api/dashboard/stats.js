@@ -3,10 +3,8 @@ import User from "../../../models/User";
 import Transaction from "../../../models/Transaction";
 import Commission from "../../../models/Commission";
 import Sale from "../../../models/Sale";
-import handleCors from "../../../lib/cors";
-
-export default async function handler(req, res) {
-  await handleCors(req, res);
+import allowCors from "../../../middleware/cors";
+async function handler(req, res) {
 
   if (req.method !== "GET") {
     return res.status(405).json({ success: false, message: "Method Not Allowed" });
@@ -36,3 +34,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: error.message });
   }
 }
+
+export default allowCors(handler);

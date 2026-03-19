@@ -20,7 +20,8 @@ export default function AddCustomerModal({ show, onClose, onSuccess }) {
     try {
       const res = await axios.post(
         `${API}/api/customer`,
-        { ...form, referralId: form.referralId || undefined },
+      //  { ...form, referralId: form.referralId || undefined },
+        {...form, referralId: undefined},
         { headers: { "Content-Type": "application/json" } }
       );
       if (res.status === 201) {

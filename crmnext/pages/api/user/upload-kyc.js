@@ -4,7 +4,7 @@ import Vendor from "../../../models/Vendor/Vendor";
 import Agent from "../../../models/Agent/Agent";
 import FranchiseHead from "../../../models/Franchise/Francise";
 import TerritoryHead from "../../../models/Territory/TerritoryHead";
-import handleCors from "../../../lib/cors";
+import allowCors from "../../../middleware/cors";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -43,8 +43,7 @@ const upload = multer({
 
 const uploadMiddleware = upload.single("file");
 
-export default async function handler(req, res) {
-  await handleCors(req, res);
+async function handler(req, res) {
 
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method Not Allowed" });
@@ -121,3 +120,5 @@ export const config = {
     bodyParser: false, // Disable body parsing, multer will handle it
   },
 };
+
+export default allowCors(handler);

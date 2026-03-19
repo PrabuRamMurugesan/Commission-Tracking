@@ -1,38 +1,15 @@
-import Cors from "cors";
+import allowCors from "../../../middleware/cors";
 import jwt from "jsonwebtoken";
 import dbConnect from "../../../utils/dbConnect";
 import { getFilteredTransactionsFromBBSlive } from "../../../controllers/transactionController";
 
-// CORS config (same as customers)
-const cors = Cors({
-  origin: "http://localhost:5174",
-  methods: ["GET", "OPTIONS"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-});
-
-function runMiddleware(req, res, fn) {
-  return new Promise((resolve, reject) =>
-    fn(req, res, (err) => (err ? reject(err) : resolve()))
-  );
-}
-
-export default async function handler(req, res) {
+async function handler(req, res) {
   // 1) DB
   await dbConnect();
 
-  // 2) CORS
-  await runMiddleware(req, res, cors);
-
-  // 3) Preflight
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  // 4) Only GET allowed
-  if (req.method !== "GET") {
+ if (req.method !== "GET") {
     res.setHeader("Allow", "GET,OPTIONS");
-    return res.status(405).end("Method Not Allowed");
+    return res.status(405).json({ message: "Method Not Allowed" });
   }
 
   // 5) Auth
@@ -94,3 +71,5 @@ export default async function handler(req, res) {
   // 8) Delegate to BBSlive controller
   return getFilteredTransactionsFromBBSlive(req, res);
 }
+
+export default allowCors(handler)

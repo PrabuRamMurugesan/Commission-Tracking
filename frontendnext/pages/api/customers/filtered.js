@@ -1,31 +1,13 @@
-import Cors from "cors";
+import allowCors from "../../../middleware/cors";
 import jwt from "jsonwebtoken";
 import dbConnect from "../../../lib/mongodb";
 import { getFilteredCustomersFromBBSlive } from "../../../controllers/Customer/customerController";
 
-// CORS config
-const cors = Cors({
-  origin: "http://localhost:5174",
-  methods: ["GET", "OPTIONS"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-});
-
-function runMiddleware(req, res, fn) {
-  return new Promise((resolve, reject) =>
-    fn(req, res, (err) => (err ? reject(err) : resolve()))
-  );
-}
-
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { role: queryRole, userId: queryUserId } = req.query;
 
   // 1) DB
   await dbConnect();
-
-  // 2) CORS
-  await runMiddleware(req, res, cors);
-
   // 3) Preflight
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -93,3 +75,5 @@ export default async function handler(req, res) {
   // 8) Delegate to the BBSlive-based controller
   return getFilteredCustomersFromBBSlive(req, res);
 }
+
+export default allowCors(handler)

@@ -1,11 +1,9 @@
 import { connectDB } from "../../../lib/db";
 import User from "../../../models/User";
 import Transaction from "../../../models/Transaction";
-import handleCors from "../../../lib/cors";
+import allowsCors from "../../../middleware/allowCors";
 
-export default async function handler(req, res) {
-  await handleCors(req, res);
-
+async function handler(req, res) {
   const { userId, role } = req.query;
 
   if (req.method !== "GET") {
@@ -71,3 +69,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+export default allowsCors(handler);

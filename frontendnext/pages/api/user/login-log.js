@@ -1,9 +1,7 @@
 import dbConnect from "../../../lib/mongodb";
 import LoginLog from "../../../models/LoginLog";
-import handleCors from "../../../lib/cors";
-
-export default async function handler(req, res) {
-  await handleCors(req, res);
+import allowCors from "../../../middleware/cors";
+async function handler(req, res) {
   await dbConnect();
 
   const { email } = req.method === "GET" ? req.query : req.body;
@@ -22,3 +20,5 @@ export default async function handler(req, res) {
     res.status(500).json({ message: "Error", error: err.message });
   }
 }
+
+export default allowCors(handler);

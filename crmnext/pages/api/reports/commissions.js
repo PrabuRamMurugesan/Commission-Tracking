@@ -1,16 +1,12 @@
 // pages/api/reports/commissions.js
 import dbConnect from '../../../lib/mongodb';
 import CommissionTransaction from '../../../models/Commission';
-import handleCors from '../../../lib/cors';
-
-export default async function handler(req, res) {
-  await handleCors(req, res);
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+import allowCors from "../../../middleware/cors";
+///////////////////////////////////////////
+async function handler(req, res) {
 
   if (req.method !== "GET") {
+    res.setHeader("Allow", "GET,OPTIONS");
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
@@ -123,3 +119,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
+export default allowCors(handler);

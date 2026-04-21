@@ -145,18 +145,17 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    className="submenu-item"
-                    to="/dashboard/territory-customer-list"
-                  >
-                    Customer List
-                  </Link>
-                </li>
-                <li>
                   <Link className="submenu-item" to="/dashboard/vendor-list">
                     Vendor List
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    className="submenu-item" to="/dashboard/territory-customer-list">
+                    Customer List
+                  </Link>
+                </li>
+
                 <li>
                   <Link
                     className="submenu-item"
@@ -182,16 +181,13 @@ const Sidebar = () => {
             {dropdowns.agentList && (
               <ul className="submenu">
                 <li>
-                  <Link
-                    className="submenu-item"
-                    to="/dashboard/agent-customer-list"
-                  >
-                    Customer List
+                  <Link className="submenu-item" to="/dashboard/vendor-list">
+                    Vendor List
                   </Link>
                 </li>
                 <li>
-                  <Link className="submenu-item" to="/dashboard/vendor-list">
-                    Vendor List
+                  <Link className="submenu-item" to="/dashboard/agent-customer-list">
+                    Customer List
                   </Link>
                 </li>
                 <li>
@@ -253,7 +249,14 @@ const Sidebar = () => {
                 <Link className="submenu-item" to="/dashboard/cbv-list">
                   CBV List
                 </Link>
-
+                <li>
+                  <Link
+                    className="submenu-item"
+                    to="/dashboard/cbv-customer-list"
+                  >
+                    Customer List
+                  </Link>
+                </li>
                 <li>
                   <Link
                     className="submenu-item"
@@ -326,7 +329,7 @@ const Sidebar = () => {
 
                 {/* My Customers */}
                 <li>
-                  <Link className="submenu-item" to="/dashboard/my-customers">
+                  <Link className="submenu-item" to="/dashboard/healthcare-customer-list">
                     My Customers
                   </Link>
                 </li>
@@ -358,6 +361,11 @@ const Sidebar = () => {
                 <li>
                   <Link className="submenu-item" to="/dashboard/delivery-list">
                     Delivery List
+                  </Link>
+                </li>
+                <li>
+                  <Link className="submenu-item" to="/dashboard/delivery-customer-list">
+                    My Customers
                   </Link>
                 </li>
                 <li>

@@ -2,6 +2,7 @@ export default function allowCors(handler) {
   return async (req, res) => {
 
     const allowedOrigins = [
+      "http://localhost:5173", // ✅ fix port
       "http://localhost:5174",
       "https://crm.bbscart.com"
     ];
@@ -23,10 +24,10 @@ export default function allowCors(handler) {
     );
 
     if (req.method === "OPTIONS") {
-      res.status(200).end();
-      return;
+      return res.status(200).end();
     }
 
-    return handler(req, res);
+    // ✅ IMPORTANT FIX
+    await handler(req, res);
   };
 }

@@ -154,6 +154,8 @@ import DeliveryList from "./components/delivery/Delivery";
 import HealthcareList from "./components/healthcarePartner/Healthcare";
 import MyBeneficiaries from "./components/beneficiaries/MyBeneficiaries";
 
+import HealthcareCustomerList from "./components/healthcarePartner/HealthcareCustomerList";
+import DeliveryCustomerList from "./components/delivery/DeliveryCustomerList";
 
 function App() {
   return (
@@ -292,8 +294,16 @@ function App() {
               element={<DeliveryList />} //Done this
             />
             <Route
+              path="/dashboard/delivery-customer-list"
+              element={<DeliveryCustomerList />} //Done this
+            />
+            <Route
               path="/dashboard/healthcare-list"
               element={<HealthcareList />} //Done this
+            />
+           <Route 
+              path="/dashboard/healthcare-customer-list"
+              element={<HealthcareCustomerList />} //Done this
             />
             <Route
               path="/dashboard/my-beneficiaries"

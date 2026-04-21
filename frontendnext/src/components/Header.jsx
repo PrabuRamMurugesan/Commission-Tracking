@@ -27,14 +27,14 @@ const Header = () => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-const handleLogout = () => {
-  if (window.confirm("Are you sure you want to log out?")) {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("authToken");
-    setIsLoggedIn(false);
-    navigate("/");
-  }
-};
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to log out?")) {
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("authToken");
+      setIsLoggedIn(false);
+      navigate("/");
+    }
+  };
 
 
   const toggleDropdown = (isVisible) => {
@@ -43,8 +43,16 @@ const handleLogout = () => {
 
   return (
     <header className="header">
-      <h1>
-        <a href="/dashboard">Commission Tracking System</a>
+      <h1 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <a href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+
+          {/* <img
+            src="/logo.png"
+            alt="logo"
+            style={{ width: "30px", height: "30px" }}
+          /> */}
+          Commission Tracking System
+        </a>
       </h1>
 
       <nav>
@@ -69,8 +77,8 @@ const handleLogout = () => {
             {showDropdown && (
               <ul className="dropdown-menu">
                 <li>
-                  <Link 
-                    to="/dashboard/agent-list" 
+                  <Link
+                    to="/dashboard/agent-list"
                     onClick={() => setShowDropdown(false)}
                     style={{ textDecoration: "none", color: "white" }}
                   >
@@ -78,7 +86,7 @@ const handleLogout = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link 
+                  <Link
                     to="/dashboard/top-performance"
                     onClick={() => setShowDropdown(false)}
                     style={{ textDecoration: "none", color: "white" }}
@@ -99,7 +107,7 @@ const handleLogout = () => {
           <li>
             <a href="/profile">Profile</a>
           </li>
-      
+
 
           {!isLoggedIn ? (
             <li>
